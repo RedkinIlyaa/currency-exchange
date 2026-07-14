@@ -15,3 +15,4 @@ target/
 ### Java ###
 *.class
 *.log
+src/main/resources/application.properties
