@@ -10,7 +10,12 @@ import lombok.*;
 public class Currency {
     @EqualsAndHashCode.Exclude
     private Integer id;
+
     private String code;
+
+    @EqualsAndHashCode.Exclude
     private String fullName;
+
+    @EqualsAndHashCode.Exclude
     private String sign;
 }
