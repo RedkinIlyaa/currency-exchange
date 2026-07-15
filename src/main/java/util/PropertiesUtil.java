@@ -17,7 +17,7 @@ public class PropertiesUtil {
 
     static  {
         try (InputStream inputStream = PropertiesUtil.class
-                .getResourceAsStream("application.properties")
+                .getResourceAsStream("/application.properties")
         ) {
             if (inputStream == null) {
                 throw new ConfigurationException("application.properties was not found");
