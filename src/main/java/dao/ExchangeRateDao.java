@@ -8,10 +8,7 @@ import lombok.NoArgsConstructor;
 import util.DataSourceManager;
 
 import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -83,8 +80,8 @@ public class ExchangeRateDao {
             if (resultSet.next())
                 return Optional.of(ExchangeRate.builder()
                         .id(resultSet.getInt("id"))
-                        .baseCurrencyId(resultSet.getInt("baseCurrencyId"))
-                        .targetCurrencyId(resultSet.getInt("targetCurrencyId"))
+                        .baseCurrencyId(resultSet.getInt("base_currency_id"))
+                        .targetCurrencyId(resultSet.getInt("target_currency_id"))
                         .rate(resultSet.getBigDecimal("rate"))
                         .build()
                 );
@@ -115,7 +112,8 @@ public class ExchangeRateDao {
     public Integer addExchangeRate(Integer baseCurrencyId, Integer targetCurrencyId, BigDecimal rate) {
 
         try (Connection connection = DataSourceManager.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_EXCHANGE_RATE);) {
+             PreparedStatement preparedStatement = connection.prepareStatement(ADD_NEW_EXCHANGE_RATE,
+                     Statement.RETURN_GENERATED_KEYS);) {
 
             preparedStatement.setInt(1, baseCurrencyId);
             preparedStatement.setInt(2, targetCurrencyId);
