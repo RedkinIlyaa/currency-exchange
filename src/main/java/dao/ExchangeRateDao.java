@@ -2,6 +2,8 @@ package dao;
 
 
 import entity.ExchangeRate;
+import exception.CurrencyDaoException;
+import exception.ExchangeRateDaoException;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -65,7 +67,7 @@ public class ExchangeRateDao {
             return exchangeRates;
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new ExchangeRateDaoException("Failed to get List<ExchangeRate> from db", e);
         }
     }
 
@@ -89,7 +91,7 @@ public class ExchangeRateDao {
             return Optional.empty();
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new ExchangeRateDaoException("Failed to get ExchangeRate from db", e);
         }
     }
 
@@ -105,7 +107,7 @@ public class ExchangeRateDao {
             return preparedStatement.executeUpdate();
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new ExchangeRateDaoException("Failed to update ExchangeRate in db", e);
         }
     }
 
@@ -121,15 +123,16 @@ public class ExchangeRateDao {
 
             int executedUpdate = preparedStatement.executeUpdate();
             if (executedUpdate == 0)
-                throw new SQLException();
+                throw new CurrencyDaoException("Add 0 exchangeRate to db");
 
             ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
-            generatedKeys.next();
+            if (!generatedKeys.next())
+                throw new CurrencyDaoException("Failed to get generatedKey(id of ExchangeRate");
 
             return generatedKeys.getInt("id");
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new CurrencyDaoException("Failed to add new ExchangeRate   to db", e);
         }
 
     }
