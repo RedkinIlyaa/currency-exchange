@@ -99,7 +99,9 @@ public class CurrencyDao {
                 throw new CurrencyDaoException("Add 0 currency to db");
 
             ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
-            generatedKeys.next();
+            if (!generatedKeys.next())
+                throw new CurrencyDaoException("Failed to get generatedKey(id of Currency");
+
             return generatedKeys.getInt("id");
 
         } catch (SQLException e) {
