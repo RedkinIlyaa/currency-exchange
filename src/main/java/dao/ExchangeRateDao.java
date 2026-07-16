@@ -3,6 +3,7 @@ package dao;
 
 import entity.ExchangeRate;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import util.DataSourceManager;
 
@@ -18,6 +19,7 @@ import java.util.Optional;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ExchangeRateDao {
 
+    @Getter
     private static final ExchangeRateDao exchangeRateDao = new ExchangeRateDao();
 
     private static final String GET_ALL_EXCHANGE_RATES = """
@@ -32,7 +34,7 @@ public class ExchangeRateDao {
             """;
 
     private static final String UPDATE_EXCHANGE_RATE = """
-            UPDATE exchange_rate
+            UPDATE exchange_rates
             SET rate = ?
             WHERE base_currency_id = ? AND target_currency_id = ?
             """;
