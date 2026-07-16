@@ -2,6 +2,7 @@ package dao;
 
 import entity.Currency;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import util.DataSourceManager;
 
@@ -16,6 +17,7 @@ import java.util.Optional;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CurrencyDao {
 
+    @Getter
     private static final CurrencyDao currencyDao = new CurrencyDao();
 
     private static final String GET_ALL_CURRENCIES = """
@@ -38,7 +40,6 @@ public class CurrencyDao {
 
         try (Connection connection = DataSourceManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(GET_ALL_CURRENCIES)) {
-
 
             List<Currency> currencyList = new ArrayList<>();
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -85,7 +86,7 @@ public class CurrencyDao {
         }
     }
 
-    public boolean addNewCurrency(Currency currency) {
+    public Integer addNewCurrency(Currency currency) {
 
         try (Connection connection = DataSourceManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(ADD_NEW_CURRENCY)) {
@@ -98,7 +99,8 @@ public class CurrencyDao {
             if (executed == 0)
                 throw  new SQLException();
 
-            return true;
+            ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+            return generatedKeys.getInt("id");
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
