@@ -39,6 +39,15 @@ public class ExchangeRateDao {
             WHERE base_currency_id = ? AND target_currency_id = ?
             """;
 
+    private static final String ADD_NEW_EXCHANGE_RATE = """
+            INSERT INTO exchange_rates (base_currency_id, target_currency_id, rate)
+            VALUES (
+                ?,
+                ?,
+                ?
+            )
+            """;
+
     public List<ExchangeRate> getExchangeRatesList() {
         try (Connection connection = DataSourceManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(GET_ALL_EXCHANGE_RATES);) {
@@ -107,4 +116,27 @@ public class ExchangeRateDao {
         }
     }
 
+    public Integer addExchangeRate(Integer base_currency_id, Integer target_currency_id, BigDecimal rate) {
+
+        try (Connection connection = DataSourceManager.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_EXCHANGE_RATE);) {
+
+            preparedStatement.setInt(1, base_currency_id);
+            preparedStatement.setInt(2, target_currency_id);
+            preparedStatement.setBigDecimal(3, rate);
+
+            int executedUpdate = preparedStatement.executeUpdate();
+            if (executedUpdate == 0)
+                throw new SQLException();
+
+            ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+            generatedKeys.next();
+
+            return generatedKeys.getInt("id");
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
 }
