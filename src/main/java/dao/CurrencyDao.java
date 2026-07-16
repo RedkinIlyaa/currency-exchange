@@ -6,10 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import util.DataSourceManager;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -89,7 +86,8 @@ public class CurrencyDao {
     public Integer addNewCurrency(Currency currency) {
 
         try (Connection connection = DataSourceManager.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(ADD_NEW_CURRENCY)) {
+             PreparedStatement preparedStatement = connection.prepareStatement(ADD_NEW_CURRENCY,
+                     Statement.RETURN_GENERATED_KEYS)) {
 
             preparedStatement.setString(1, currency.getCode());
             preparedStatement.setString(2, currency.getFullName());
