@@ -100,6 +100,7 @@ public class CurrencyDao {
                 throw  new SQLException();
 
             ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+            generatedKeys.next();
             return generatedKeys.getInt("id");
 
         } catch (SQLException e) {
