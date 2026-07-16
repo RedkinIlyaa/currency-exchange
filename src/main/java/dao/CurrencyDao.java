@@ -1,6 +1,7 @@
 package dao;
 
 import entity.Currency;
+import exception.CurrencyDaoException;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -55,7 +56,7 @@ public class CurrencyDao {
             return currencyList;
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new CurrencyDaoException("Failed to get List<Currency> from db", e);
         }
     }
 
@@ -79,7 +80,7 @@ public class CurrencyDao {
             return Optional.empty();
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new CurrencyDaoException("Failed to get Currency from db", e);
         }
     }
 
@@ -95,14 +96,14 @@ public class CurrencyDao {
 
             int executed = preparedStatement.executeUpdate();
             if (executed == 0)
-                throw  new SQLException();
+                throw new CurrencyDaoException("Add 0 currency to db");
 
             ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
             generatedKeys.next();
             return generatedKeys.getInt("id");
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new CurrencyDaoException("Failed to add new Currency to db", e);
         }
     }
 }
