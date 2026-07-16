@@ -72,19 +72,19 @@ public class ExchangeRateDao {
         }
     }
 
-    public Optional<ExchangeRate> getExchangeRate(Integer base_currency_id, Integer target_currency_id) {
+    public Optional<ExchangeRate> getExchangeRate(Integer baseCurrencyId, Integer targetCurrencyId) {
         try (Connection connection = DataSourceManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(GET_EXCHANGE_RATE_BY_ID);) {
 
-            preparedStatement.setInt(1, base_currency_id);
-            preparedStatement.setInt(2, target_currency_id);
+            preparedStatement.setInt(1, baseCurrencyId);
+            preparedStatement.setInt(2, targetCurrencyId);
 
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next())
                 return Optional.of(ExchangeRate.builder()
                         .id(resultSet.getInt("id"))
-                        .baseCurrencyId(resultSet.getInt("base_currency_id"))
-                        .targetCurrencyId(resultSet.getInt("target_currency_id"))
+                        .baseCurrencyId(resultSet.getInt("baseCurrencyId"))
+                        .targetCurrencyId(resultSet.getInt("targetCurrencyId"))
                         .rate(resultSet.getBigDecimal("rate"))
                         .build()
                 );
@@ -96,33 +96,29 @@ public class ExchangeRateDao {
         }
     }
 
-    public int updateExchangeRate(Integer base_currency_id, Integer target_currency_id, BigDecimal rate) {
+    public int updateExchangeRate(Integer baseCurrencyId, Integer targetCurrencyId, BigDecimal rate) {
 
         try (Connection connection = DataSourceManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_EXCHANGE_RATE);) {
 
             preparedStatement.setBigDecimal(1, rate);
-            preparedStatement.setInt(2, base_currency_id);
-            preparedStatement.setInt(3, target_currency_id);
+            preparedStatement.setInt(2, baseCurrencyId);
+            preparedStatement.setInt(3, targetCurrencyId);
 
-            int executedUpdate = preparedStatement.executeUpdate();
-            if (executedUpdate == 0)
-                throw new SQLException();
-
-            return executedUpdate;
+            return preparedStatement.executeUpdate();
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public Integer addExchangeRate(Integer base_currency_id, Integer target_currency_id, BigDecimal rate) {
+    public Integer addExchangeRate(Integer baseCurrencyId, Integer targetCurrencyId, BigDecimal rate) {
 
         try (Connection connection = DataSourceManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_EXCHANGE_RATE);) {
 
-            preparedStatement.setInt(1, base_currency_id);
-            preparedStatement.setInt(2, target_currency_id);
+            preparedStatement.setInt(1, baseCurrencyId);
+            preparedStatement.setInt(2, targetCurrencyId);
             preparedStatement.setBigDecimal(3, rate);
 
             int executedUpdate = preparedStatement.executeUpdate();
