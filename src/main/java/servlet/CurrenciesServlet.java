@@ -2,7 +2,7 @@ package servlet;
 
 
 import dto.CurrencyDto;
-import jakarta.servlet.ServletException;
+import exception.CurrencyDaoException;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -19,14 +19,17 @@ import java.util.List;
 public class CurrenciesServlet extends HttpServlet {
 
     private final CurrencyService currencyService = CurrencyService.getInstance();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)  {
         resp.setContentType("application/json");
         List<CurrencyDto> allCurrencies = currencyService.getAllCurrencies();
-        ObjectMapper objectMapper = new ObjectMapper();
 
-        ServletOutputStream respOutputStream = resp.getOutputStream();
-        objectMapper.writeValue(respOutputStream, allCurrencies);
+        try (ServletOutputStream respOutputStream = resp.getOutputStream()) {
+            objectMapper.writeValue(respOutputStream, allCurrencies);
+        } catch (IOException e) {
+            throw new CurrencyDaoException("Failed to write data to ServletOutputStream");
+        }
     }
 }
