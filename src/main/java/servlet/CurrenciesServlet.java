@@ -2,6 +2,7 @@ package servlet;
 
 
 import dto.CurrencyDto;
+import exception.CurrenciesServletException;
 import exception.CurrencyDaoException;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.annotation.WebServlet;
@@ -29,7 +30,7 @@ public class CurrenciesServlet extends HttpServlet {
         try (ServletOutputStream respOutputStream = resp.getOutputStream()) {
             objectMapper.writeValue(respOutputStream, allCurrencies);
         } catch (IOException e) {
-            throw new CurrencyDaoException("Failed to write data to ServletOutputStream");
+            throw new CurrenciesServletException("Failed to write JSON response", e);
         }
     }
 }
