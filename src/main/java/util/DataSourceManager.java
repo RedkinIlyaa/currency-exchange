@@ -21,6 +21,7 @@ public class DataSourceManager {
         hikariConfig.setPassword(PropertiesUtil.getPassword());
         hikariConfig.setMaximumPoolSize(8);
         hikariConfig.setMinimumIdle(2);
+        hikariConfig.setDriverClassName("org.postgresql.Driver");
         hihikariDataSource = new HikariDataSource(hikariConfig);
     }
 
