@@ -15,12 +15,17 @@ public class ExceptionHandlingFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-
         HttpServletResponse httpServletResponse = (HttpServletResponse) response;
         httpServletResponse.setCharacterEncoding("UTF-8");
+
         try {
             chain.doFilter(request, response);
         } catch (RuntimeException runtimeException) {
+
+            if (httpServletResponse.isCommitted())
+                throw runtimeException;
+
+            httpServletResponse.reset();
             httpServletResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             httpServletResponse.setContentType("application/json");
             Map<String, String> map = new HashMap<>();
