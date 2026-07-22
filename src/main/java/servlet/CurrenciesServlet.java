@@ -3,8 +3,6 @@ package servlet;
 
 import dto.CurrencyDto;
 import exception.CurrenciesServletException;
-import exception.CurrencyDaoException;
-import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,8 +25,8 @@ public class CurrenciesServlet extends HttpServlet {
         resp.setContentType("application/json");
         List<CurrencyDto> allCurrencies = currencyService.getAllCurrencies();
 
-        try (ServletOutputStream respOutputStream = resp.getOutputStream()) {
-            objectMapper.writeValue(respOutputStream, allCurrencies);
+        try {
+            objectMapper.writeValue(resp.getOutputStream(), allCurrencies);
         } catch (IOException e) {
             throw new CurrenciesServletException("Failed to write JSON response", e);
         }
