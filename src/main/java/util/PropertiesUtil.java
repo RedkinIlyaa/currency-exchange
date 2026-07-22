@@ -23,7 +23,7 @@ public class PropertiesUtil {
                 throw new ConfigurationException("application.properties was not found");
             }
             PROPERTIES.load(inputStream);
-            logger.trace("application.properties loaded successfully");
+            logger.debug("application.properties loaded successfully");
 
             } catch (IOException e) {
                 throw new ConfigurationException("Failed to load application.properties", e);
