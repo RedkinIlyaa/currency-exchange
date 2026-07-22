@@ -13,7 +13,7 @@ import java.sql.SQLException;
 public class DataSourceManager {
 
     private static final HikariConfig hikariConfig = new HikariConfig();
-    private static final HikariDataSource hihikariDataSource;
+    private static final HikariDataSource hikariDataSource;
 
     static {
         hikariConfig.setJdbcUrl(PropertiesUtil.getUrl());
@@ -22,12 +22,12 @@ public class DataSourceManager {
         hikariConfig.setMaximumPoolSize(8);
         hikariConfig.setMinimumIdle(2);
         hikariConfig.setDriverClassName("org.postgresql.Driver");
-        hihikariDataSource = new HikariDataSource(hikariConfig);
+        hikariDataSource = new HikariDataSource(hikariConfig);
     }
 
     public static Connection getConnection() {
         try {
-            return hihikariDataSource.getConnection();
+            return hikariDataSource.getConnection();
         } catch (SQLException e) {
             throw new ConnectionException("Failed to obtain Connection from HikariCP pool", e);
         }
