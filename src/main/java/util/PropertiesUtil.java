@@ -13,7 +13,7 @@ import java.util.Properties;
 public class PropertiesUtil {
 
     private static final Properties PROPERTIES = new Properties();
-    private static final Logger LOGGER = LoggerFactory.getLogger(PropertiesUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(PropertiesUtil.class);
 
     static  {
         try (InputStream inputStream = PropertiesUtil.class
@@ -23,6 +23,7 @@ public class PropertiesUtil {
                 throw new ConfigurationException("application.properties was not found");
             }
             PROPERTIES.load(inputStream);
+            logger.trace("application.properties loaded successfully");
 
             } catch (IOException e) {
                 throw new ConfigurationException("Failed to load application.properties", e);
