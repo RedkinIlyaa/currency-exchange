@@ -14,7 +14,7 @@ public class CurrencyService {
     private final CurrencyDao currencyDao = CurrencyDao.getCurrencyDao();
 
     public List<CurrencyDto> getAllCurrencies() {
-        return currencyDao.getCurrenciesList().stream().map(
+        return currencyDao.findAll().stream().map(
                 currency -> CurrencyDto.builder()
                         .id(currency.getId())
                         .name(currency.getFullName())

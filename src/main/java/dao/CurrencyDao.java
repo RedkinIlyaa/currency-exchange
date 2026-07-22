@@ -34,7 +34,7 @@ public class CurrencyDao {
             VALUES (?, ?, ?);
             """;
 
-    public List<Currency> getCurrenciesList() {
+    public List<Currency> findAll() {
 
         try (Connection connection = DataSourceManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(GET_ALL_CURRENCIES)) {
@@ -60,7 +60,7 @@ public class CurrencyDao {
         }
     }
 
-    public Optional<Currency> getCurrencyByCode(String code) {
+    public Optional<Currency> findByCode(String code) {
 
         try (Connection connection = DataSourceManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(GET_CURRENCY_BY_CODE)) {
@@ -84,7 +84,7 @@ public class CurrencyDao {
         }
     }
 
-    public Integer addNewCurrency(Currency currency) {
+    public Integer save(Currency currency) {
 
         try (Connection connection = DataSourceManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(ADD_NEW_CURRENCY,
@@ -100,7 +100,7 @@ public class CurrencyDao {
 
             ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
             if (!generatedKeys.next())
-                throw new CurrencyDaoException("Failed to get generatedKey(id of Currency");
+                throw new CurrencyDaoException("Failed to obtain generated id of Currency");
 
             return generatedKeys.getInt("id");
 
