@@ -33,18 +33,16 @@ public class ExceptionHandlingFilter implements Filter {
             httpServletResponse.setContentType("application/json");
             httpServletResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             Map<String, String> map = new HashMap<>();
-            map.put("message", "Currency code is missing");
+            map.put("message", invalidCurrencyCodeException.getMessage());
             objectMapper.writeValue(httpServletResponse.getOutputStream(), map);
-            logger.error("Currency code is missing", invalidCurrencyCodeException);
         } catch (CurrencyNotFoundException currencyNotFoundException) {
             httpServletResponse.reset();
             httpServletResponse.setCharacterEncoding(StandardCharsets.UTF_8.name());
             httpServletResponse.setContentType("application/json");
             httpServletResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
             Map<String, String> map = new HashMap<>();
-            map.put("message", "Invalid currency code");
+            map.put("message", currencyNotFoundException.getMessage());
             objectMapper.writeValue(httpServletResponse.getOutputStream(), map);
-            logger.error("Invalid currency code", currencyNotFoundException);
         } catch (RuntimeException runtimeException) {
 
             if (httpServletResponse.isCommitted())
