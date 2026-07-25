@@ -22,7 +22,6 @@ public class CurrenciesServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)  {
-        resp.setContentType("application/json");
         List<CurrencyDto> allCurrencies = currencyService.getAllCurrencies();
 
         try {
