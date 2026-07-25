@@ -33,7 +33,7 @@ import java.util.Optional;
 
         if (!currencyByCode.isPresent()) {
             // Валюта не найдена - 404
-            throw new CurrencyNotFoundException("Invalid currency code: " + pathInfo.substring(1));
+            throw new CurrencyNotFoundException("Currency not found: " + pathInfo.substring(1));
         }
 
         CurrencyDto currencyDto = currencyByCode.get();
