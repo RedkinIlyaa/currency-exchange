@@ -1,6 +1,8 @@
 package filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import exception.CurrencyNotFoundException;
+import exception.InvalidCurrencyCodeException;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletResponse;
@@ -8,10 +10,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-@WebFilter(value = "/currencies")
+@WebFilter(value = "/*")
 public class ExceptionHandlingFilter implements Filter {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final Logger logger = LoggerFactory.getLogger(ExceptionHandlingFilter.class);
@@ -19,19 +22,38 @@ public class ExceptionHandlingFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletResponse httpServletResponse = (HttpServletResponse) response;
-        httpServletResponse.setCharacterEncoding("UTF-8");
+        httpServletResponse.setContentType("application/json");
+        httpServletResponse.setCharacterEncoding(StandardCharsets.UTF_8.name());
 
         try {
             chain.doFilter(request, response);
+        } catch (InvalidCurrencyCodeException invalidCurrencyCodeException) {
+            httpServletResponse.reset();
+            httpServletResponse.setCharacterEncoding(StandardCharsets.UTF_8.name());
+            httpServletResponse.setContentType("application/json");
+            httpServletResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            Map<String, String> map = new HashMap<>();
+            map.put("message", "Currency code is missing");
+            objectMapper.writeValue(httpServletResponse.getOutputStream(), map);
+            logger.error("Currency code is missing", invalidCurrencyCodeException);
+        } catch (CurrencyNotFoundException currencyNotFoundException) {
+            httpServletResponse.reset();
+            httpServletResponse.setCharacterEncoding(StandardCharsets.UTF_8.name());
+            httpServletResponse.setContentType("application/json");
+            httpServletResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            Map<String, String> map = new HashMap<>();
+            map.put("message", "Invalid currency code");
+            objectMapper.writeValue(httpServletResponse.getOutputStream(), map);
+            logger.error("Invalid currency code", currencyNotFoundException);
         } catch (RuntimeException runtimeException) {
 
             if (httpServletResponse.isCommitted())
                 throw runtimeException;
 
             httpServletResponse.reset();
-            httpServletResponse.setCharacterEncoding("UTF-8");
-            httpServletResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            httpServletResponse.setCharacterEncoding(StandardCharsets.UTF_8.name());
             httpServletResponse.setContentType("application/json");
+            httpServletResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             Map<String, String> map = new HashMap<>();
             map.put("message", "Internal server error");
             objectMapper.writeValue(httpServletResponse.getOutputStream(), map);
