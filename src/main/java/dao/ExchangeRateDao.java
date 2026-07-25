@@ -5,7 +5,6 @@ import entity.ExchangeRate;
 import exception.CurrencyDaoException;
 import exception.ExchangeRateDaoException;
 import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import util.DataSourceManager;
 
@@ -18,7 +17,6 @@ import java.util.Optional;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ExchangeRateDao {
 
-    @Getter
     private static final ExchangeRateDao exchangeRateDao = new ExchangeRateDao();
 
     private static final String GET_ALL_EXCHANGE_RATES = """
@@ -135,5 +133,9 @@ public class ExchangeRateDao {
             throw new CurrencyDaoException("Failed to add new ExchangeRate   to db", e);
         }
 
+    }
+
+    public static ExchangeRateDao getInstance() {
+        return exchangeRateDao;
     }
 }
