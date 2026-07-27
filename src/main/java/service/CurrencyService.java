@@ -13,7 +13,7 @@ import java.util.Optional;
 public class CurrencyService {
 
     private static final CurrencyService currencyService = new CurrencyService();
-    private final CurrencyDao currencyDao = CurrencyDao.getCurrencyDao();
+    private final CurrencyDao currencyDao = CurrencyDao.getInstance();
 
     public List<CurrencyDto> getAllCurrencies() {
         return currencyDao.findAll().stream().map(

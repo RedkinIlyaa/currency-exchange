@@ -3,7 +3,6 @@ package dao;
 import entity.Currency;
 import exception.CurrencyDaoException;
 import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import util.DataSourceManager;
 
@@ -15,7 +14,6 @@ import java.util.Optional;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CurrencyDao {
 
-    @Getter
     private static final CurrencyDao currencyDao = new CurrencyDao();
 
     private static final String GET_ALL_CURRENCIES = """
@@ -107,5 +105,9 @@ public class CurrencyDao {
         } catch (SQLException e) {
             throw new CurrencyDaoException("Failed to add new Currency to db", e);
         }
+    }
+
+    public static CurrencyDao getInstance() {
+        return currencyDao;
     }
 }
