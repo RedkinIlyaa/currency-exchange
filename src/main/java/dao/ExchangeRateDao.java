@@ -1,6 +1,7 @@
 package dao;
 
 
+import entity.Currency;
 import entity.ExchangeRate;
 import exception.CurrencyDaoException;
 import exception.ExchangeRateDaoException;
@@ -20,8 +21,12 @@ public class ExchangeRateDao {
     private static final ExchangeRateDao exchangeRateDao = new ExchangeRateDao();
 
     private static final String GET_ALL_EXCHANGE_RATES = """
-            SELECT er.id, er.base_currency_id, er.target_currency_id, er.rate
+            SELECT er.id, base.id, base.code, base.full_name, base.sign, target.id, target.code, target.full_name, target.sign, er.rate
             FROM exchange_rates er
+            INNER JOIN currencies base
+            ON er.base_currency_id = base.id
+            INNER JOIN currencies target
+            ON er.target_currency_id = target.id
             """;
 
     private static final String GET_EXCHANGE_RATE_BY_ID = """
@@ -55,8 +60,20 @@ public class ExchangeRateDao {
                 exchangeRates.add(
                         ExchangeRate.builder()
                                 .id(resultSet.getInt("id"))
-                                .baseCurrencyId(resultSet.getInt("base_currency_id"))
-                                .targetCurrencyId(resultSet.getInt("target_currency_id"))
+                                .baseCurrency(Currency.builder()
+                                        .id(resultSet.getInt("id"))
+                                        .code(resultSet.getString("code"))
+                                        .fullName(resultSet.getString("full_name"))
+                                        .sign(resultSet.getString("sign"))
+                                        .build()
+                                )
+                                .targetCurrency(Currency.builder()
+                                        .id(resultSet.getInt("id"))
+                                        .code(resultSet.getString("code"))
+                                        .fullName(resultSet.getString("full_name"))
+                                        .sign(resultSet.getString("sign"))
+                                        .build()
+                                )
                                 .rate(resultSet.getBigDecimal("rate"))
                                 .build()
                 );
@@ -78,10 +95,23 @@ public class ExchangeRateDao {
 
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next())
-                return Optional.of(ExchangeRate.builder()
-                        .id(resultSet.getInt("id"))
-                        .baseCurrencyId(resultSet.getInt("base_currency_id"))
-                        .targetCurrencyId(resultSet.getInt("target_currency_id"))
+                return Optional.of(
+                        ExchangeRate.builder()
+                        .id(resultSet.getInt("er.id"))
+                        .baseCurrency(Currency.builder()
+                                .id(resultSet.getInt("base.id"))
+                                .code(resultSet.getString("base.code"))
+                                .fullName(resultSet.getString("base.full_name"))
+                                .sign(resultSet.getString("base.sign"))
+                                .build()
+                        )
+                        .targetCurrency(Currency.builder()
+                                .id(resultSet.getInt("target.id"))
+                                .code(resultSet.getString("target.code"))
+                                .fullName(resultSet.getString("target.full_name"))
+                                .sign(resultSet.getString("target.sign"))
+                                .build()
+                        )
                         .rate(resultSet.getBigDecimal("rate"))
                         .build()
                 );

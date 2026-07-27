@@ -13,8 +13,8 @@ public class ExchangeRate {
     @EqualsAndHashCode.Exclude
     private Integer id;
 
-    private Integer baseCurrencyId;
-    private Integer targetCurrencyId;
+    private Currency baseCurrency;
+    private Currency targetCurrency;
 
     @EqualsAndHashCode.Exclude
     private BigDecimal rate;
