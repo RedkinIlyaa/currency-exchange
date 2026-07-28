@@ -31,7 +31,7 @@ import java.util.Optional;
 
         Optional<CurrencyDto> currencyByCode = currencyService.getCurrencyByCode(pathInfo.substring(1));
 
-        if (!currencyByCode.isPresent()) {
+        if (currencyByCode.isEmpty()) {
             // Валюта не найдена - 404
             throw new CurrencyNotFoundException("Currency not found: " + pathInfo.substring(1));
         }
