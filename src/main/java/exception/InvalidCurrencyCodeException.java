@@ -1,6 +1,6 @@
 package exception;
 
-public class InvalidCurrencyCodeException extends RuntimeException {
+public class InvalidCurrencyCodeException extends InvalidException {
     public InvalidCurrencyCodeException(String message) {
         super(message);
     }
