@@ -1,8 +1,7 @@
 package filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import exception.CurrencyNotFoundException;
-import exception.InvalidCurrencyCodeException;
+import exception.*;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletResponse;
@@ -27,21 +26,21 @@ public class ExceptionHandlingFilter implements Filter {
 
         try {
             chain.doFilter(request, response);
-        } catch (InvalidCurrencyCodeException invalidCurrencyCodeException) {
+        } catch (InvalidException invalidException) {
             httpServletResponse.reset();
             httpServletResponse.setCharacterEncoding(StandardCharsets.UTF_8.name());
             httpServletResponse.setContentType("application/json");
             httpServletResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             Map<String, String> map = new HashMap<>();
-            map.put("message", invalidCurrencyCodeException.getMessage());
+            map.put("message", invalidException.getMessage());
             objectMapper.writeValue(httpServletResponse.getOutputStream(), map);
-        } catch (CurrencyNotFoundException currencyNotFoundException) {
+        } catch (NotFoundException notFoundException) {
             httpServletResponse.reset();
             httpServletResponse.setCharacterEncoding(StandardCharsets.UTF_8.name());
             httpServletResponse.setContentType("application/json");
             httpServletResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
             Map<String, String> map = new HashMap<>();
-            map.put("message", currencyNotFoundException.getMessage());
+            map.put("message", notFoundException.getMessage());
             objectMapper.writeValue(httpServletResponse.getOutputStream(), map);
         } catch (RuntimeException runtimeException) {
 
