@@ -29,10 +29,14 @@ public class ExchangeRateDao {
             ON er.target_currency_id = target.id
             """;
 
-    private static final String GET_EXCHANGE_RATE_BY_ID = """
-            SELECT er.id, er.base_currency_id, er.target_currency_id, er.rate
+    private static final String GET_EXCHANGE_RATE_BY_CURRENCIES_CODES = """
+            SELECT er.id, base.id, base.code, base.full_name, base.sign, target.id, target.code, target.full_name, target.sign, er.rate
             FROM exchange_rates er
-            WHERE base_currency_id = ? AND target_currency_id = ?
+            INNER JOIN currencies base
+            ON er.base_currency_id = base.id
+            INNER JOIN currencies target
+            ON er.target_currency_id = target.id
+            WHERE base.code = ? AND target.code = ?
             """;
 
     private static final String UPDATE_EXCHANGE_RATE = """
@@ -52,7 +56,7 @@ public class ExchangeRateDao {
 
     public List<ExchangeRate> getExchangeRatesList() {
         try (Connection connection = DataSourceManager.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(GET_ALL_EXCHANGE_RATES);) {
+             PreparedStatement preparedStatement = connection.prepareStatement(GET_ALL_EXCHANGE_RATES)) {
 
             List<ExchangeRate> exchangeRates = new ArrayList<>();
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -61,17 +65,17 @@ public class ExchangeRateDao {
                         ExchangeRate.builder()
                                 .id(resultSet.getInt("id"))
                                 .baseCurrency(Currency.builder()
-                                        .id(resultSet.getInt("id"))
-                                        .code(resultSet.getString("code"))
-                                        .fullName(resultSet.getString("full_name"))
-                                        .sign(resultSet.getString("sign"))
+                                        .id(resultSet.getInt(2))
+                                        .code(resultSet.getString(3))
+                                        .fullName(resultSet.getString(4))
+                                        .sign(resultSet.getString(5))
                                         .build()
                                 )
                                 .targetCurrency(Currency.builder()
-                                        .id(resultSet.getInt("id"))
-                                        .code(resultSet.getString("code"))
-                                        .fullName(resultSet.getString("full_name"))
-                                        .sign(resultSet.getString("sign"))
+                                        .id(resultSet.getInt(6))
+                                        .code(resultSet.getString(7))
+                                        .fullName(resultSet.getString(8))
+                                        .sign(resultSet.getString(9))
                                         .build()
                                 )
                                 .rate(resultSet.getBigDecimal("rate"))
@@ -86,47 +90,47 @@ public class ExchangeRateDao {
         }
     }
 
-    public Optional<ExchangeRate> getExchangeRate(Integer baseCurrencyId, Integer targetCurrencyId) {
+    public Optional<ExchangeRate> getExchangeRateByCurrencyCodes(String baseCurrencyCode, String targetCurrencyCode) {
         try (Connection connection = DataSourceManager.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(GET_EXCHANGE_RATE_BY_ID);) {
+             PreparedStatement preparedStatement = connection.prepareStatement(GET_EXCHANGE_RATE_BY_CURRENCIES_CODES)) {
 
-            preparedStatement.setInt(1, baseCurrencyId);
-            preparedStatement.setInt(2, targetCurrencyId);
+            preparedStatement.setString(1, baseCurrencyCode);
+            preparedStatement.setString(2, targetCurrencyCode);
 
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next())
                 return Optional.of(
                         ExchangeRate.builder()
-                        .id(resultSet.getInt("er.id"))
-                        .baseCurrency(Currency.builder()
-                                .id(resultSet.getInt("base.id"))
-                                .code(resultSet.getString("base.code"))
-                                .fullName(resultSet.getString("base.full_name"))
-                                .sign(resultSet.getString("base.sign"))
+                                .id(resultSet.getInt("id"))
+                                .baseCurrency(Currency.builder()
+                                        .id(resultSet.getInt(2))
+                                        .code(resultSet.getString(3))
+                                        .fullName(resultSet.getString(4))
+                                        .sign(resultSet.getString(5))
+                                        .build()
+                                )
+                                .targetCurrency(Currency.builder()
+                                        .id(resultSet.getInt(6))
+                                        .code(resultSet.getString(7))
+                                        .fullName(resultSet.getString(8))
+                                        .sign(resultSet.getString(9))
+                                        .build()
+                                )
+                                .rate(resultSet.getBigDecimal("rate"))
                                 .build()
-                        )
-                        .targetCurrency(Currency.builder()
-                                .id(resultSet.getInt("target.id"))
-                                .code(resultSet.getString("target.code"))
-                                .fullName(resultSet.getString("target.full_name"))
-                                .sign(resultSet.getString("target.sign"))
-                                .build()
-                        )
-                        .rate(resultSet.getBigDecimal("rate"))
-                        .build()
                 );
 
             return Optional.empty();
 
         } catch (SQLException e) {
-            throw new ExchangeRateDaoException("Failed to get ExchangeRate from db", e);
+            throw new ExchangeRateDaoException("Failed to get ExchangeRate from db with: " + baseCurrencyCode + " and " + targetCurrencyCode, e);
         }
     }
 
     public int updateExchangeRate(Integer baseCurrencyId, Integer targetCurrencyId, BigDecimal rate) {
 
         try (Connection connection = DataSourceManager.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_EXCHANGE_RATE);) {
+             PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_EXCHANGE_RATE)) {
 
             preparedStatement.setBigDecimal(1, rate);
             preparedStatement.setInt(2, baseCurrencyId);
