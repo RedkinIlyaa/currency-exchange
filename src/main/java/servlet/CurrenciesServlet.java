@@ -3,6 +3,7 @@ package servlet;
 
 import dto.CurrencyDto;
 import exception.CurrenciesServletException;
+import exception.InvalidExclusionOfRequiredParameter;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,6 +12,7 @@ import service.CurrencyService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 
@@ -26,6 +28,25 @@ public class CurrenciesServlet extends HttpServlet {
 
         try {
             objectMapper.writeValue(resp.getOutputStream(), allCurrencies);
+        } catch (IOException e) {
+            throw new CurrenciesServletException("Failed to write JSON response", e);
+        }
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws UnsupportedEncodingException {
+        req.setCharacterEncoding("UTF-8");
+        String name = req.getParameter("name");
+        String code = req.getParameter("code");
+        String sign = req.getParameter("sign");
+
+        if (name == null || code == null)
+            throw new InvalidExclusionOfRequiredParameter("Missing parameter(name or code) in request");
+
+        CurrencyDto currencyDto = currencyService.addNewCurrency(name, code, sign);
+        try {
+            resp.setStatus(HttpServletResponse.SC_CREATED);
+            objectMapper.writeValue(resp.getOutputStream(), currencyDto);
         } catch (IOException e) {
             throw new CurrenciesServletException("Failed to write JSON response", e);
         }

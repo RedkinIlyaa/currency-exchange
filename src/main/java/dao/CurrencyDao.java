@@ -1,9 +1,12 @@
 package dao;
 
 import entity.Currency;
+import exception.CurrencyAlreadyExistsException;
+import org.postgresql.util.PSQLException;
 import exception.CurrencyDaoException;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.postgresql.util.ServerErrorMessage;
 import util.DataSourceManager;
 
 import java.sql.*;
@@ -15,6 +18,9 @@ import java.util.Optional;
 public class CurrencyDao {
 
     private static final CurrencyDao currencyDao = new CurrencyDao();
+    private static final String UNIQUE_VIOLATION_SQL_STATE = "23505";
+    private static final String CODE_UNIQUE_CONSTRAINT =  "currencies_code_key";
+    private static final String FULL_NAME_UNIQUE_CONSTRAINT = "currencies_full_name_key";
 
     private static final String GET_ALL_CURRENCIES = """
             SELECT c.id, c.code, c.full_name, c.sign
@@ -103,7 +109,28 @@ public class CurrencyDao {
             return generatedKeys.getInt("id");
 
         } catch (SQLException e) {
-            throw new CurrencyDaoException("Failed to add new Currency to db", e);
+            if (!UNIQUE_VIOLATION_SQL_STATE.equals(e.getSQLState())) {
+                throw new CurrencyDaoException("Failed to add new Currency to db", e);
+            }
+
+            String constraint = null;
+
+            if (e instanceof PSQLException psqlException) {
+                ServerErrorMessage serverErrorMessage = psqlException.getServerErrorMessage();
+                if (serverErrorMessage != null) {
+                    constraint = serverErrorMessage.getConstraint();
+                }
+            }
+
+            if (CODE_UNIQUE_CONSTRAINT.equals(constraint)) {
+                throw new CurrencyAlreadyExistsException("Currency with code = " + currency.getCode() + " already exists", e);
+            }
+
+            if (FULL_NAME_UNIQUE_CONSTRAINT.equals(constraint)){
+                throw new CurrencyAlreadyExistsException("Currency with name = " + currency.getFullName() + " already exists", e);
+            }
+
+            throw new CurrencyAlreadyExistsException("Currency already exists", e);
         }
     }
 

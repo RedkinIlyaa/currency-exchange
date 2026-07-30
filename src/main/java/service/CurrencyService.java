@@ -2,6 +2,7 @@ package service;
 
 import dao.CurrencyDao;
 import dto.CurrencyDto;
+import entity.Currency;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -34,6 +35,22 @@ public class CurrencyService {
                         .code(currency.getCode())
                         .sign(currency.getSign())
                         .build());
+    }
+
+    public CurrencyDto addNewCurrency(String name, String code, String sign) {
+        Currency currency = Currency.builder()
+                .code(code)
+                .fullName(name)
+                .sign(sign)
+                .build();
+        Integer integer = currencyDao.save(currency);
+
+        return CurrencyDto.builder()
+                .id(integer)
+                .name(currency.getFullName())
+                .code(currency.getCode())
+                .sign(currency.getSign())
+                .build();
     }
 
     public static CurrencyService getInstance() {
