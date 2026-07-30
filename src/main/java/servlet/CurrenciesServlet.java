@@ -40,8 +40,8 @@ public class CurrenciesServlet extends HttpServlet {
         String code = req.getParameter("code");
         String sign = req.getParameter("sign");
 
-        if (name == null || code == null)
-            throw new InvalidExclusionOfRequiredParameter("Missing parameter(name or code) in request");
+        if (name == null || code == null || sign == null)
+            throw new InvalidExclusionOfRequiredParameter("Missing parameter(name/code/sign) in request");
 
         CurrencyDto currencyDto = currencyService.addNewCurrency(name, code, sign);
         try {
