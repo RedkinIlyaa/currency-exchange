@@ -3,8 +3,9 @@ package dao;
 
 import entity.Currency;
 import entity.ExchangeRate;
-import exception.CurrencyDaoException;
+import exception.ExchangeRateAlreadyExistsException;
 import exception.ExchangeRateDaoException;
+import exception.ExchangeRateNotFoundException;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import util.DataSourceManager;
@@ -46,13 +47,30 @@ public class ExchangeRateDao {
             """;
 
     private static final String ADD_NEW_EXCHANGE_RATE = """
-            INSERT INTO exchange_rates (base_currency_id, target_currency_id, rate)
-            VALUES (
-                ?,
-                ?,
-                ?
-            )
-            """;
+    WITH inserted_rate AS (
+        INSERT INTO exchange_rates (base_currency_id, target_currency_id, rate)
+        SELECT base.id, target.id, ?
+        FROM currencies base
+        CROSS JOIN currencies target
+        WHERE base.code = ? AND target.code = ?
+        RETURNING id, base_currency_id, target_currency_id, rate
+    )
+    SELECT ir.id,
+           base.id,
+           base.code,
+           base.full_name,
+           base.sign,
+           target.id,
+           target.code,
+           target.full_name,
+           target.sign,
+           ir.rate
+    FROM inserted_rate ir
+             JOIN currencies base
+                  ON base.id = ir.base_currency_id
+             JOIN currencies target
+                  ON target.id = ir.target_currency_id
+    """;
 
     public List<ExchangeRate> getExchangeRatesList() {
         try (Connection connection = DataSourceManager.getConnection();
@@ -143,28 +161,45 @@ public class ExchangeRateDao {
         }
     }
 
-    public Integer addExchangeRate(Integer baseCurrencyId, Integer targetCurrencyId, BigDecimal rate) {
+    public Optional<ExchangeRate> addExchangeRate(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) {
 
         try (Connection connection = DataSourceManager.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(ADD_NEW_EXCHANGE_RATE,
-                     Statement.RETURN_GENERATED_KEYS);) {
+             PreparedStatement preparedStatement = connection.prepareStatement(ADD_NEW_EXCHANGE_RATE)) {
 
-            preparedStatement.setInt(1, baseCurrencyId);
-            preparedStatement.setInt(2, targetCurrencyId);
-            preparedStatement.setBigDecimal(3, rate);
+            preparedStatement.setBigDecimal(1, rate);
+            preparedStatement.setString(2, baseCurrencyCode);
+            preparedStatement.setString(3, targetCurrencyCode);
 
-            int executedUpdate = preparedStatement.executeUpdate();
-            if (executedUpdate == 0)
-                throw new CurrencyDaoException("Add 0 exchangeRate to db");
-
-            ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
-            if (!generatedKeys.next())
-                throw new CurrencyDaoException("Failed to get generatedKey(id of ExchangeRate");
-
-            return generatedKeys.getInt("id");
-
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                return Optional.ofNullable(ExchangeRate.builder()
+                        .id(resultSet.getInt(1))
+                        .baseCurrency(Currency.builder()
+                                .id(resultSet.getInt(2))
+                                .code(resultSet.getString(3))
+                                .fullName(resultSet.getString(4))
+                                .sign(resultSet.getString(5))
+                                .build()
+                        )
+                        .targetCurrency(Currency.builder()
+                                .id(resultSet.getInt(6))
+                                .code(resultSet.getString(7))
+                                .fullName(resultSet.getString(8))
+                                .sign(resultSet.getString(9))
+                                .build()
+                        )
+                        .rate(resultSet.getBigDecimal(10))
+                        .build());
+            } else {
+                throw new ExchangeRateNotFoundException("One (or both) of the currencies in the currency pair does not exist in the database: " + baseCurrencyCode + " " + targetCurrencyCode);
+            }
         } catch (SQLException e) {
-            throw new CurrencyDaoException("Failed to add new ExchangeRate   to db", e);
+
+            if (e.getSQLState().equals("23505")) {
+                throw new ExchangeRateAlreadyExistsException("Exchange rate with baseCurrencyCode = " + baseCurrencyCode + " and targetCurrencyCode = " + targetCurrencyCode + " is already exists.", e);
+            }
+
+            throw new ExchangeRateDaoException("Failed to add new ExchangeRate to db", e);
         }
 
     }

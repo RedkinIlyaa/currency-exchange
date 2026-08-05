@@ -1,6 +1,6 @@
 package exception;
 
-public class CurrencyAlreadyExistsException extends RuntimeException {
+public class CurrencyAlreadyExistsException extends AlreadyExistsException {
     public CurrencyAlreadyExistsException(String message, Throwable e) {
         super(message, e);
     }

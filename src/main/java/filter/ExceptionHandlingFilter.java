@@ -26,13 +26,13 @@ public class ExceptionHandlingFilter implements Filter {
 
         try {
             chain.doFilter(request, response);
-        }  catch (CurrencyAlreadyExistsException currencyAlreadyExistsException) {
+        }  catch (AlreadyExistsException alreadyExistsException) {
                 httpServletResponse.reset();
                 httpServletResponse.setCharacterEncoding(StandardCharsets.UTF_8.name());
                 httpServletResponse.setContentType("application/json");
                 httpServletResponse.setStatus(HttpServletResponse.SC_CONFLICT);
                 Map<String, String> map = new HashMap<>();
-                map.put("message", currencyAlreadyExistsException.getMessage());
+                map.put("message", alreadyExistsException.getMessage());
                 objectMapper.writeValue(httpServletResponse.getOutputStream(), map);
         } catch (InvalidException invalidException) {
             httpServletResponse.reset();
