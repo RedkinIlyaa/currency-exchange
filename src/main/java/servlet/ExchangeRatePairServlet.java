@@ -2,8 +2,8 @@ package servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dto.ExchangeRateDto;
-import exception.ExchangeRateNotFoundException;
-import exception.InvalidExchangeRatePairException;
+import exception.invalid.*;
+import exception.notfound.ExchangeRateNotFoundException;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;

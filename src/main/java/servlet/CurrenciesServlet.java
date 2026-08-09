@@ -3,7 +3,7 @@ package servlet;
 
 import dto.CurrencyDto;
 import exception.CurrenciesServletException;
-import exception.InvalidExclusionOfRequiredParameter;
+import exception.invalid.InvalidExclusionOfRequiredParameter;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;

@@ -1,7 +1,7 @@
 package dao;
 
 import entity.Currency;
-import exception.CurrencyAlreadyExistsException;
+import exception.exist.CurrencyAlreadyExistsException;
 import org.postgresql.util.PSQLException;
 import exception.CurrencyDaoException;
 import lombok.AccessLevel;

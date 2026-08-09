@@ -3,9 +3,9 @@ package dao;
 
 import entity.Currency;
 import entity.ExchangeRate;
-import exception.ExchangeRateAlreadyExistsException;
+import exception.exist.ExchangeRateAlreadyExistsException;
 import exception.ExchangeRateDaoException;
-import exception.ExchangeRateNotFoundException;
+import exception.notfound.ExchangeRateNotFoundException;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import util.DataSourceManager;

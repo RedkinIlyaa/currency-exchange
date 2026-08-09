@@ -2,8 +2,8 @@ package servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dto.CurrencyDto;
-import exception.CurrencyNotFoundException;
-import exception.InvalidCurrencyCodeException;
+import exception.notfound.CurrencyNotFoundException;
+import exception.invalid.InvalidCurrencyCodeException;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;

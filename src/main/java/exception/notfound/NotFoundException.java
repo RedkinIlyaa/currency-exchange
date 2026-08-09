@@ -1,4 +1,4 @@
-package exception;
+package exception.notfound;
 
 public class NotFoundException extends RuntimeException {
     public NotFoundException(String message) {
