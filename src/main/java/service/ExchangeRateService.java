@@ -19,25 +19,7 @@ public class ExchangeRateService {
 
     public List<ExchangeRateDto> getAllExchangeRates() {
         return exchangeRateDao.getExchangeRatesList().stream()
-                .map(exchangeRate -> ExchangeRateDto.builder()
-                        .id(exchangeRate.getId())
-                        .baseCurrency(CurrencyDto.builder()
-                                .id(exchangeRate.getBaseCurrency().getId())
-                                .code(exchangeRate.getBaseCurrency().getCode())
-                                .name(exchangeRate.getBaseCurrency().getFullName())
-                                .sign(exchangeRate.getBaseCurrency().getSign())
-                                .build()
-                        )
-                        .targetCurrency(
-                                CurrencyDto.builder()
-                                        .id(exchangeRate.getTargetCurrency().getId())
-                                        .code(exchangeRate.getTargetCurrency().getCode())
-                                        .name(exchangeRate.getTargetCurrency().getFullName())
-                                        .sign(exchangeRate.getTargetCurrency().getSign())
-                                        .build()
-                        )
-                        .rate(exchangeRate.getRate())
-                        .build()
+                .map(ExchangeRateService::createExchangeRateDTO
                 ).toList();
     }
 
@@ -45,51 +27,45 @@ public class ExchangeRateService {
         Optional<ExchangeRate> exchangeRateByCurrencyCodes = exchangeRateDao.getExchangeRateByCurrencyCodes(firstCode.toUpperCase(Locale.ENGLISH), secondCode.toUpperCase(Locale.ENGLISH));
 
         return exchangeRateByCurrencyCodes.map(
-                exchangeRate -> ExchangeRateDto.builder()
-                        .id(exchangeRate.getId())
-                        .baseCurrency(CurrencyDto.builder()
-                                .id(exchangeRate.getBaseCurrency().getId())
-                                .code(exchangeRate.getBaseCurrency().getCode())
-                                .name(exchangeRate.getBaseCurrency().getFullName())
-                                .sign(exchangeRate.getBaseCurrency().getSign())
-                                .build()
-                        )
-                        .targetCurrency(
-                                CurrencyDto.builder()
-                                        .id(exchangeRate.getTargetCurrency().getId())
-                                        .code(exchangeRate.getTargetCurrency().getCode())
-                                        .name(exchangeRate.getTargetCurrency().getFullName())
-                                        .sign(exchangeRate.getTargetCurrency().getSign())
-                                        .build()
-                        )
-                        .rate(exchangeRate.getRate())
-                        .build()
+                ExchangeRateService::createExchangeRateDTO
         );
     }
 
     public Optional<ExchangeRateDto> addNewExchangeRate(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) {
         Optional<ExchangeRate> addedExchangeRate = exchangeRateDao.addExchangeRate(baseCurrencyCode, targetCurrencyCode, rate);
         return addedExchangeRate.map(
-                exchangeRate -> ExchangeRateDto.builder()
-                        .id(exchangeRate.getId())
-                        .baseCurrency(CurrencyDto.builder()
+                ExchangeRateService::createExchangeRateDTO
+        );
+    }
+
+    public Optional<ExchangeRateDto> patchToExchangeRate(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) {
+        Optional<ExchangeRate> updatedExchangeRate = exchangeRateDao.updateExchangeRate(baseCurrencyCode, targetCurrencyCode, rate);
+        return updatedExchangeRate.map(
+                ExchangeRateService::createExchangeRateDTO
+        );
+    }
+
+    private static ExchangeRateDto createExchangeRateDTO(ExchangeRate exchangeRate) {
+        return ExchangeRateDto.builder()
+                .id(exchangeRate.getId())
+                .baseCurrency(
+                        CurrencyDto.builder()
                                 .id(exchangeRate.getBaseCurrency().getId())
                                 .code(exchangeRate.getBaseCurrency().getCode())
                                 .name(exchangeRate.getBaseCurrency().getFullName())
                                 .sign(exchangeRate.getBaseCurrency().getSign())
                                 .build()
-                        )
-                        .targetCurrency(
-                                CurrencyDto.builder()
-                                        .id(exchangeRate.getTargetCurrency().getId())
-                                        .code(exchangeRate.getTargetCurrency().getCode())
-                                        .name(exchangeRate.getTargetCurrency().getFullName())
-                                        .sign(exchangeRate.getTargetCurrency().getSign())
-                                        .build()
-                        )
-                        .rate(exchangeRate.getRate())
-                        .build()
-        );
+                )
+                .targetCurrency(
+                        CurrencyDto.builder()
+                                .id(exchangeRate.getTargetCurrency().getId())
+                                .code(exchangeRate.getTargetCurrency().getCode())
+                                .name(exchangeRate.getTargetCurrency().getFullName())
+                                .sign(exchangeRate.getTargetCurrency().getSign())
+                                .build()
+                )
+                .rate(exchangeRate.getRate())
+                .build();
     }
 
     public static ExchangeRateService getInstance() {

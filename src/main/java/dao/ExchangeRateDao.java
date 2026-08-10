@@ -41,9 +41,28 @@ public class ExchangeRateDao {
             """;
 
     private static final String UPDATE_EXCHANGE_RATE = """
-            UPDATE exchange_rates
-            SET rate = ?
-            WHERE base_currency_id = ? AND target_currency_id = ?
+            WITH updated_rate AS (
+                UPDATE exchange_rates
+                SET rate = ?
+                WHERE base_currency_id = (SELECT id FROM currencies WHERE code = ?) AND
+                      target_currency_id = (SELECT id FROM currencies WHERE code = ?)
+                RETURNING id, base_currency_id, target_currency_id, rate
+            )
+            SELECT updated_rate.id,
+                   base.id,
+                   base.code,
+                   base.full_name,
+                   base.sign,
+                   target.id,
+                   target.code,
+                   target.full_name,
+                   target.sign,
+                   updated_rate.rate
+            FROM updated_rate
+            INNER JOIN currencies base
+            ON base.id = updated_rate.base_currency_id
+            INNER JOIN currencies target
+            ON target.id = updated_rate.target_currency_id;
             """;
 
     private static final String ADD_NEW_EXCHANGE_RATE = """
@@ -145,17 +164,38 @@ public class ExchangeRateDao {
         }
     }
 
-    public int updateExchangeRate(Integer baseCurrencyId, Integer targetCurrencyId, BigDecimal rate) {
+    public Optional<ExchangeRate> updateExchangeRate(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) {
 
         try (Connection connection = DataSourceManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_EXCHANGE_RATE)) {
 
             preparedStatement.setBigDecimal(1, rate);
-            preparedStatement.setInt(2, baseCurrencyId);
-            preparedStatement.setInt(3, targetCurrencyId);
+            preparedStatement.setString(2, baseCurrencyCode);
+            preparedStatement.setString(3, targetCurrencyCode);
 
-            return preparedStatement.executeUpdate();
-
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                return Optional.ofNullable(ExchangeRate.builder()
+                        .id(resultSet.getInt(1))
+                        .baseCurrency(Currency.builder()
+                                .id(resultSet.getInt(2))
+                                .code(resultSet.getString(3))
+                                .fullName(resultSet.getString(4))
+                                .sign(resultSet.getString(5))
+                                .build()
+                        )
+                        .targetCurrency(Currency.builder()
+                                .id(resultSet.getInt(6))
+                                .code(resultSet.getString(7))
+                                .fullName(resultSet.getString(8))
+                                .sign(resultSet.getString(9))
+                                .build()
+                        )
+                        .rate(resultSet.getBigDecimal(10))
+                        .build());
+            } else {
+                throw new ExchangeRateNotFoundException("One (or both) of the currencies in the currency pair does not exist in the database: " + baseCurrencyCode + " " + targetCurrencyCode);
+            }
         } catch (SQLException e) {
             throw new ExchangeRateDaoException("Failed to update ExchangeRate in db", e);
         }
