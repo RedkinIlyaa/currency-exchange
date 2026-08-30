@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 
 @ToString
 @Getter
+@Setter
 @Builder
 @EqualsAndHashCode
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
