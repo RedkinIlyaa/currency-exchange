@@ -25,6 +25,7 @@ public class CurrencyDao {
     private static final String GET_ALL_CURRENCIES = """
             SELECT c.id, c.code, c.full_name, c.sign
             FROM currencies c
+            ORDER BY c.id
             """;
 
     private static final String GET_CURRENCY_BY_CODE = """
