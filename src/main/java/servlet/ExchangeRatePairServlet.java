@@ -33,6 +33,10 @@ public class ExchangeRatePairServlet extends HttpServlet {
         }
 
         String pathInfoWithoutSlash = pathInfo.substring(1);
+        if (pathInfoWithoutSlash.length() != 6 || !pathInfoWithoutSlash.matches("[a-zA-Z]{6}")) {
+            throw new InvalidExchangeRatePairException("Currency pair must contain exactly 6 Latin letters");
+        }
+
         String firstCurrencyCode = pathInfoWithoutSlash.substring(0, 3);
         String secondCurrencyCode = pathInfoWithoutSlash.substring(3);
         Optional<ExchangeRateDto> exchangeRateDto = exchangeRateService

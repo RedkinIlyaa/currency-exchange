@@ -30,6 +30,16 @@ public class ExchangeRateDao {
             ON er.target_currency_id = target.id
             """;
 
+    public static final String GET_EXCHANGE_RATE_BY_CURRENCY_CODE = """
+            SELECT er.id, base.id, base.code, base.full_name, base.sign, target.id, target.code, target.full_name, target.sign, er.rate
+            FROM exchange_rates er
+            INNER JOIN currencies base
+            ON er.base_currency_id = base.id
+            INNER JOIN currencies target
+            ON er.target_currency_id = target.id
+            WHERE base.code = ? AND target.code = ?
+            """;
+
     private static final String GET_EXCHANGE_RATE_BY_CURRENCIES_CODES = """
             SELECT er.id, base.id, base.code, base.full_name, base.sign, target.id, target.code, target.full_name, target.sign, er.rate
             FROM exchange_rates er
@@ -169,7 +179,7 @@ public class ExchangeRateDao {
 
     public Optional<ExchangeRate> getExchangeRateByCurrencyCodes(String baseCurrencyCode, String targetCurrencyCode) {
         try (Connection connection = DataSourceManager.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(GET_EXCHANGE_RATE_BY_CURRENCIES_CODES)) {
+             PreparedStatement preparedStatement = connection.prepareStatement(GET_EXCHANGE_RATE_BY_CURRENCY_CODE)) {
 
             preparedStatement.setString(1, baseCurrencyCode);
             preparedStatement.setString(2, targetCurrencyCode);
