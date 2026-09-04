@@ -6,6 +6,8 @@ import dto.CurrencyDto;
 import dto.ExchangeRateDto;
 import entity.Currency;
 import entity.ExchangeRate;
+import exception.invalid.InvalidCurrencyCodeException;
+import exception.invalid.InvalidTypeOfValueInBodyParameterException;
 import exception.notfound.CurrencyNotFoundException;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -23,8 +25,8 @@ public class ExchangeRateService {
 
     public List<ExchangeRateDto> getAllExchangeRates() {
         return exchangeRateDao.getExchangeRatesList().stream()
-                .map(ExchangeRateService::createExchangeRateDTO
-                ).toList();
+                .map(ExchangeRateService::createExchangeRateDTO)
+                .toList();
     }
 
     public Optional<ExchangeRateDto> exchangeRateDtoByCurrenciesCodes(String firstCode, String secondCode) {
@@ -35,17 +37,35 @@ public class ExchangeRateService {
         );
     }
 
-    public Optional<ExchangeRateDto> addNewExchangeRate(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) {
-        Optional<ExchangeRate> addedExchangeRate = exchangeRateDao.addExchangeRate(baseCurrencyCode, targetCurrencyCode, rate);
+    public Optional<ExchangeRateDto> addNewExchangeRate(String baseCurrencyCode, String targetCurrencyCode, String rate) {
+        if (doesCurrencyCodeHaveMistake(baseCurrencyCode) || doesCurrencyCodeHaveMistake(targetCurrencyCode))
+            throw new InvalidCurrencyCodeException("Code parameter must be exactly 3 char and contain only a-z or A-Z letters");
+
+        BigDecimal bigDecimalRate;
+        try {
+            bigDecimalRate = new BigDecimal(rate);
+        } catch (NumberFormatException nfeException) {
+            throw new InvalidTypeOfValueInBodyParameterException("Current rate parameter can't be written into db. It must be a digit");
+        }
+
+        if (bigDecimalRate.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new InvalidTypeOfValueInBodyParameterException("Rate parameter can't be 0 or less. Change it.");
+        }
+
+        Optional<ExchangeRate> addedExchangeRate = exchangeRateDao.addExchangeRate(baseCurrencyCode, targetCurrencyCode, bigDecimalRate);
         return addedExchangeRate.map(
                 ExchangeRateService::createExchangeRateDTO
         );
     }
 
+    private boolean doesCurrencyCodeHaveMistake(String code) {
+        return !(code.matches("[a-zA-Z]+") && (code.length() == 3));
+    }
+
     public Optional<ExchangeRateDto> patchToExchangeRate(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) {
         Optional<ExchangeRate> updatedExchangeRate = exchangeRateDao.updateExchangeRate(baseCurrencyCode, targetCurrencyCode, rate);
         return updatedExchangeRate.map(
-                ExchangeRateService::createExchangeRateDTO
+                ExchangeRateService::createExchangeRateDTOWithoutId
         );
     }
 
@@ -125,8 +145,31 @@ public class ExchangeRateService {
         throw new RuntimeException("transferFromOneCurrencyToAnother(..., ...) return 3 or more ExchangeRates - it's a mistake");
     }
 
+    private static ExchangeRateDto createExchangeRateDTOWithoutId(ExchangeRate exchangeRate) {
+        return ExchangeRateDto.builder()
+                .baseCurrency(
+                        CurrencyDto.builder()
+                                .id(exchangeRate.getBaseCurrency().getId())
+                                .code(exchangeRate.getBaseCurrency().getCode())
+                                .name(exchangeRate.getBaseCurrency().getFullName())
+                                .sign(exchangeRate.getBaseCurrency().getSign())
+                                .build()
+                )
+                .targetCurrency(
+                        CurrencyDto.builder()
+                                .id(exchangeRate.getTargetCurrency().getId())
+                                .code(exchangeRate.getTargetCurrency().getCode())
+                                .name(exchangeRate.getTargetCurrency().getFullName())
+                                .sign(exchangeRate.getTargetCurrency().getSign())
+                                .build()
+                )
+                .rate(exchangeRate.getRate())
+                .build();
+    }
+
     private static ExchangeRateDto createExchangeRateDTO(ExchangeRate exchangeRate) {
         return ExchangeRateDto.builder()
+                .id(exchangeRate.getId())
                 .baseCurrency(
                         CurrencyDto.builder()
                                 .id(exchangeRate.getBaseCurrency().getId())

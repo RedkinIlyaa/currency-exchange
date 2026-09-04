@@ -2,6 +2,7 @@ package servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dto.ExchangeRateDto;
+import exception.invalid.InvalidCurrencyCodeException;
 import exception.notfound.ExchangeRateNotFoundException;
 import exception.invalid.InvalidExclusionOfRequiredParameter;
 import jakarta.servlet.ServletOutputStream;
@@ -12,7 +13,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import service.ExchangeRateService;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -39,13 +39,22 @@ public class ExchangeRatesServlet extends HttpServlet {
         String targetCurrencyCode = req.getParameter("targetCurrencyCode");
         String rate = req.getParameter("rate");
 
-        if (baseCurrencyCode == null || targetCurrencyCode == null || rate == null)
-            throw new InvalidExclusionOfRequiredParameter("Missing parameter(baseCurrencyCode/targetCurrencyCode/rate) in request");
+        if (baseCurrencyCode == null || baseCurrencyCode.isBlank())
+            throw new InvalidExclusionOfRequiredParameter("Omitted parameter - baseCurrencyCode in the request");
+
+        if (targetCurrencyCode == null || targetCurrencyCode.isBlank())
+            throw new InvalidExclusionOfRequiredParameter("Omitted parameter - targetCurrencyCode in the request");
+
+        if (rate == null || rate.isBlank())
+            throw new InvalidExclusionOfRequiredParameter("Omitted parameter - rate in the request");
+
+        if (baseCurrencyCode.equals(targetCurrencyCode))
+            throw new InvalidCurrencyCodeException("Base and target currencies must be different");
 
         Optional<ExchangeRateDto> exchangeRateDto = exchangeRateService.addNewExchangeRate(
                 baseCurrencyCode.toUpperCase(Locale.ENGLISH),
                 targetCurrencyCode.toUpperCase(Locale.ENGLISH),
-                new BigDecimal(rate)
+                rate
         );
 
         if (exchangeRateDto.isEmpty())
