@@ -29,6 +29,9 @@ public class CurrencyService {
     }
 
     public Optional<CurrencyDto> getCurrencyByCode(String code) {
+        if (doesCurrencyCodeHaveMistake(code))
+            throw new InvalidCurrencyCodeException("Code parameter must be exactly 3 char and contain only a-z or A-Z letters");
+
         return currencyDao.findByCode(code.toUpperCase(Locale.ENGLISH))
                 .map(currency -> CurrencyDto.builder()
                         .id(currency.getId())
