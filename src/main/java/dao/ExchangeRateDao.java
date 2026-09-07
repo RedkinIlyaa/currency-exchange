@@ -243,7 +243,7 @@ public class ExchangeRateDao {
                         .rate(resultSet.getBigDecimal(10))
                         .build());
             } else {
-                throw new ExchangeRateNotFoundException("One (or both) of the currencies in the currency pair does not exist in the database: " + baseCurrencyCode + " " + targetCurrencyCode);
+                throw new ExchangeRateNotFoundException("Exchange rate not found: " + baseCurrencyCode + "-" + targetCurrencyCode);
             }
         } catch (SQLException e) {
             throw new ExchangeRateDaoException("Failed to update ExchangeRate in db", e);
