@@ -48,12 +48,15 @@ public class ExchangeRatesServlet extends HttpServlet {
         if (rate == null || rate.isBlank())
             throw new InvalidExclusionOfRequiredParameter("Omitted parameter - rate in the request");
 
+        baseCurrencyCode = baseCurrencyCode.toUpperCase(Locale.ENGLISH);
+        targetCurrencyCode = targetCurrencyCode.toUpperCase(Locale.ENGLISH);
+
         if (baseCurrencyCode.equals(targetCurrencyCode))
             throw new InvalidCurrencyCodeException("Base and target currencies must be different");
 
         Optional<ExchangeRateDto> exchangeRateDto = exchangeRateService.addNewExchangeRate(
-                baseCurrencyCode.toUpperCase(Locale.ENGLISH),
-                targetCurrencyCode.toUpperCase(Locale.ENGLISH),
+                baseCurrencyCode,
+                targetCurrencyCode,
                 rate
         );
 
