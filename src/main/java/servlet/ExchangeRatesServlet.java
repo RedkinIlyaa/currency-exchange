@@ -65,6 +65,7 @@ public class ExchangeRatesServlet extends HttpServlet {
 
         try {
             ServletOutputStream outputStream = resp.getOutputStream();
+            resp.setStatus(HttpServletResponse.SC_CREATED);
             objectMapper.writeValue(outputStream, exchangeRateDto.get());
         } catch (IOException e) {
             throw new RuntimeException(e);
