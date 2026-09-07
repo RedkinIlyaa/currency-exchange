@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 @Getter
 @Builder
 public class ExchangeRateDto {
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private int id;
     private CurrencyDto baseCurrency;
     private CurrencyDto targetCurrency;

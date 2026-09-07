@@ -78,7 +78,7 @@ public class ExchangeRateService {
 
         Optional<ExchangeRate> updatedExchangeRate = exchangeRateDao.updateExchangeRate(baseCurrencyCode, targetCurrencyCode, bigDecimalRate);
         return updatedExchangeRate.map(
-                ExchangeRateService::createExchangeRateDTOWithoutId
+                ExchangeRateService::createExchangeRateDTO
         );
     }
 
@@ -181,28 +181,6 @@ public class ExchangeRateService {
         }
 
         throw new RuntimeException("transferFromOneCurrencyToAnother(..., ...) return 3 or more ExchangeRates - it's a mistake");
-    }
-
-    private static ExchangeRateDto createExchangeRateDTOWithoutId(ExchangeRate exchangeRate) {
-        return ExchangeRateDto.builder()
-                .baseCurrency(
-                        CurrencyDto.builder()
-                                .id(exchangeRate.getBaseCurrency().getId())
-                                .code(exchangeRate.getBaseCurrency().getCode())
-                                .name(exchangeRate.getBaseCurrency().getFullName())
-                                .sign(exchangeRate.getBaseCurrency().getSign())
-                                .build()
-                )
-                .targetCurrency(
-                        CurrencyDto.builder()
-                                .id(exchangeRate.getTargetCurrency().getId())
-                                .code(exchangeRate.getTargetCurrency().getCode())
-                                .name(exchangeRate.getTargetCurrency().getFullName())
-                                .sign(exchangeRate.getTargetCurrency().getSign())
-                                .build()
-                )
-                .rate(exchangeRate.getRate())
-                .build();
     }
 
     private static ExchangeRateDto createExchangeRateDTO(ExchangeRate exchangeRate) {
