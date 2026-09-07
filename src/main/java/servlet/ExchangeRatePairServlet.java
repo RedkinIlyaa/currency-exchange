@@ -105,12 +105,12 @@ public class ExchangeRatePairServlet extends HttpServlet {
                 throw new InvalidException("Parameter " + encodedKey + " doesn't have a value.");
             }
 
-            String encodedKey = URLDecoder.decode(keyAndValue[0], StandardCharsets.UTF_8);
-            if (!encodedKey.equals("rate"))
-                throw new InvalidNameOfBodyParameterException("Body should contain only one(key + value) pair. Where key = 'rate'. Your key = '" + encodedKey + "'");
+            String decodedKey = URLDecoder.decode(keyAndValue[0], StandardCharsets.UTF_8);
+            if (!decodedKey.equals("rate"))
+                throw new InvalidNameOfBodyParameterException("Body should contain only one(key + value) pair. Where key = 'rate'. Your key = '" + decodedKey + "'");
 
-            String encodedValue = URLDecoder.decode(keyAndValue[1], StandardCharsets.UTF_8);
-            if (!encodedValue.matches("^-?\\d+(\\.\\d+)?$"))
+            String decodedValue = URLDecoder.decode(keyAndValue[1], StandardCharsets.UTF_8);
+            if (!decodedValue.matches("^-?\\d+(\\.\\d+)?$"))
                 throw new InvalidException("Rate parameter must contain only numbers.");
 
             return URLDecoder.decode(keyAndValue[1], StandardCharsets.UTF_8);
