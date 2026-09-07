@@ -82,8 +82,33 @@ public class ExchangeRateService {
         );
     }
 
-    public ExchangeRateDto transferFromOneCurrencyToAnother(String baseCurrencyCode, String targetCurrencyCode, BigDecimal amount) {
+    public ExchangeRateDto transferFromOneCurrencyToAnother(String baseCurrencyCode, String targetCurrencyCode, String stringAmount) {
         CurrencyDao currencyDao = CurrencyDao.getInstance();
+
+        if (doesCurrencyCodeHaveMistake(baseCurrencyCode)) {
+            throw new InvalidCurrencyCodeException("Base currency code parameter must be exactly 3 char and contain only a-z or A-Z letters");
+        }
+
+        if (doesCurrencyCodeHaveMistake(targetCurrencyCode)) {
+            throw new InvalidCurrencyCodeException("Target currency code parameter must be exactly 3 char and contain only a-z or A-Z letters");
+        }
+
+        baseCurrencyCode = baseCurrencyCode.toUpperCase(Locale.ENGLISH);
+        targetCurrencyCode = targetCurrencyCode.toUpperCase(Locale.ENGLISH);
+
+        if (baseCurrencyCode.equals(targetCurrencyCode))
+            throw new InvalidCurrencyCodeException("Base and target currencies must be different");
+
+        BigDecimal amount;
+        try {
+            amount = new BigDecimal(stringAmount);
+        } catch (NumberFormatException nfeException) {
+            throw new InvalidTypeOfValueInBodyParameterException("Current rate parameter can't be written into db. It must be a digit.");
+        }
+
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new InvalidException("Amount parameter can't be 0 or less. Change it.");
+        }
 
         // check baseCurrency in currencies table by baseCurrencyCode
         Optional<Currency> baseCurrency = currencyDao.findByCode(baseCurrencyCode);
@@ -144,7 +169,7 @@ public class ExchangeRateService {
                     .targetCurrency(
                     CurrencyDto.builder()
                             .id(secondExchangeRate.getTargetCurrency().getId())
-                            .code(secondExchangeRate.getTargetCurrency().getCode())
+                        .code(secondExchangeRate.getTargetCurrency().getCode())
                             .name(secondExchangeRate.getTargetCurrency().getFullName())
                             .sign(secondExchangeRate.getTargetCurrency().getSign())
                             .build()

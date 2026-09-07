@@ -10,7 +10,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import service.ExchangeRateService;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 
 
 @WebServlet(value = "/exchange")
@@ -23,12 +22,17 @@ public class ExchangeServlet extends HttpServlet {
         String fromCurrency = req.getParameter("from");
         String toCurrency = req.getParameter("to");
         String amount = req.getParameter("amount");
-        BigDecimal bigDecimal = new BigDecimal(amount);
 
-        if (fromCurrency == null || toCurrency == null || amount == null)
-            throw new InvalidExclusionOfRequiredParameter("Missing parameter(fromCurrency/toCurrency/amount) in request");
+        if (fromCurrency == null || fromCurrency.isBlank())
+            throw new InvalidExclusionOfRequiredParameter("Missing parameter 'from' in request");
 
-        ExchangeRateDto exchangeRateDto = exchangeRateService.transferFromOneCurrencyToAnother(fromCurrency, toCurrency, bigDecimal);
+        if (toCurrency == null || toCurrency.isBlank())
+            throw new InvalidExclusionOfRequiredParameter("Missing parameter 'to' in request");
+
+        if (amount == null || amount.isBlank())
+            throw new InvalidExclusionOfRequiredParameter("Missing parameter 'amount' in request");
+
+        ExchangeRateDto exchangeRateDto = exchangeRateService.transferFromOneCurrencyToAnother(fromCurrency, toCurrency, amount);
         try {
             resp.setStatus(HttpServletResponse.SC_OK);
             objectMapper.writeValue(resp.getOutputStream(), exchangeRateDto);
