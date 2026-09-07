@@ -7,6 +7,7 @@ import dto.ExchangeRateDto;
 import entity.Currency;
 import entity.ExchangeRate;
 import exception.invalid.InvalidCurrencyCodeException;
+import exception.invalid.InvalidException;
 import exception.invalid.InvalidTypeOfValueInBodyParameterException;
 import exception.notfound.CurrencyNotFoundException;
 import lombok.AccessLevel;
@@ -62,8 +63,20 @@ public class ExchangeRateService {
         return !(code.matches("[a-zA-Z]+") && (code.length() == 3));
     }
 
-    public Optional<ExchangeRateDto> patchToExchangeRate(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) {
-        Optional<ExchangeRate> updatedExchangeRate = exchangeRateDao.updateExchangeRate(baseCurrencyCode, targetCurrencyCode, rate);
+    public Optional<ExchangeRateDto> patchToExchangeRate(String baseCurrencyCode, String targetCurrencyCode, String rate) {
+
+        BigDecimal bigDecimalRate;
+        try {
+            bigDecimalRate = new BigDecimal(rate);
+        } catch (NumberFormatException nfeException) {
+            throw new InvalidTypeOfValueInBodyParameterException("Current rate parameter can't be written into db. It must be a digit.");
+        }
+
+        if (bigDecimalRate.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new InvalidException("Rate parameter can't be 0 or less. Change it.");
+        }
+
+        Optional<ExchangeRate> updatedExchangeRate = exchangeRateDao.updateExchangeRate(baseCurrencyCode, targetCurrencyCode, bigDecimalRate);
         return updatedExchangeRate.map(
                 ExchangeRateService::createExchangeRateDTOWithoutId
         );

@@ -13,7 +13,8 @@ import service.ExchangeRateService;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.math.BigDecimal;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -63,9 +64,13 @@ public class ExchangeRatePairServlet extends HttpServlet {
         }
 
         String pathInfoWithoutSlash = pathInfo.substring(1);
+        if (pathInfoWithoutSlash.length() != 6 || !pathInfoWithoutSlash.matches("[a-zA-Z]{6}")) {
+            throw new InvalidExchangeRatePairException("Currency pair must contain exactly 6 latin letters");
+        }
         String firstCurrency = pathInfoWithoutSlash.substring(0, 3);
         String secondCurrency = pathInfoWithoutSlash.substring(3);
-        BigDecimal rate = getFormParameter(req, resp);
+
+        String rate = getFormParameter(req);
 
         Optional<ExchangeRateDto> exchangeRateDto = exchangeRateService.patchToExchangeRate(firstCurrency.toUpperCase(Locale.ENGLISH), secondCurrency.toUpperCase(Locale.ENGLISH), rate);
 
@@ -81,7 +86,7 @@ public class ExchangeRatePairServlet extends HttpServlet {
         }
     }
 
-    private BigDecimal getFormParameter(HttpServletRequest req, HttpServletResponse resp) {
+    private String getFormParameter(HttpServletRequest req) {
         try {
             BufferedReader reader = req.getReader();
             List<String> list = reader.lines().toList();
@@ -95,13 +100,20 @@ public class ExchangeRatePairServlet extends HttpServlet {
             String parameterPair = split[0];
             String[] keyAndValue = parameterPair.split("=");
 
-            if (!keyAndValue[0].equals("rate"))
-                throw new InvalidNameOfBodyParameterException("Body should contain only one(key + value) pair. Where key = 'rate'. Your key = '" + keyAndValue[0] + "'");
+            if (keyAndValue.length != 2) {
+                String encodedKey = URLDecoder.decode(keyAndValue[0], StandardCharsets.UTF_8);
+                throw new InvalidException("Parameter " + encodedKey + " doesn't have a value.");
+            }
 
-            String stringRate = keyAndValue[1];
-            return new BigDecimal(stringRate);
-        } catch (NumberFormatException numberFormatException) {
-            throw new InvalidTypeOfValueInBodyParameterException("Your transferred rate can't become a BigDecimal");
+            String encodedKey = URLDecoder.decode(keyAndValue[0], StandardCharsets.UTF_8);
+            if (!encodedKey.equals("rate"))
+                throw new InvalidNameOfBodyParameterException("Body should contain only one(key + value) pair. Where key = 'rate'. Your key = '" + encodedKey + "'");
+
+            String encodedValue = URLDecoder.decode(keyAndValue[1], StandardCharsets.UTF_8);
+            if (!encodedValue.matches("^-?\\d+(\\.\\d+)?$"))
+                throw new InvalidException("Rate parameter must contain only numbers.");
+
+            return URLDecoder.decode(keyAndValue[1], StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
