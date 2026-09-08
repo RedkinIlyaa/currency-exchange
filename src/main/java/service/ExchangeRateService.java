@@ -103,7 +103,7 @@ public class ExchangeRateService {
         try {
             amount = new BigDecimal(stringAmount);
         } catch (NumberFormatException nfeException) {
-            throw new InvalidTypeOfValueInBodyParameterException("Current rate parameter can't be written into db. It must be a digit.");
+            throw new InvalidTypeOfValueInBodyParameterException("Current amount parameter can't be written into db. It must be a digit.");
         }
 
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
@@ -133,7 +133,7 @@ public class ExchangeRateService {
                 Currency currency = exchangeRate.getBaseCurrency();
                 exchangeRate.setBaseCurrency(exchangeRate.getTargetCurrency());
                 exchangeRate.setTargetCurrency(currency);
-                exchangeRate.setRate(BigDecimal.valueOf(1).divide(exchangeRate.getRate(), 4, RoundingMode.HALF_UP));
+                exchangeRate.setRate(BigDecimal.valueOf(1).divide(exchangeRate.getRate(), 20, RoundingMode.HALF_UP));
             }
 
             return createBigExchangeRate(amount, exchangeRate);
@@ -146,14 +146,14 @@ public class ExchangeRateService {
                 Currency currency = firstExchangeRate.getBaseCurrency();
                 firstExchangeRate.setBaseCurrency(firstExchangeRate.getTargetCurrency());
                 firstExchangeRate.setTargetCurrency(currency);
-                firstExchangeRate.setRate(BigDecimal.valueOf(1).divide(firstExchangeRate.getRate(), 4, RoundingMode.HALF_UP));
+                firstExchangeRate.setRate(BigDecimal.valueOf(1).divide(firstExchangeRate.getRate(), 20, RoundingMode.HALF_UP));
             }
 
             if (!secondExchangeRate.getTargetCurrency().getCode().equals(targetCurrencyCode)) {
                 Currency currency = secondExchangeRate.getBaseCurrency();
                 secondExchangeRate.setBaseCurrency(secondExchangeRate.getTargetCurrency());
                 secondExchangeRate.setTargetCurrency(currency);
-                secondExchangeRate.setRate(BigDecimal.valueOf(1).divide(secondExchangeRate.getRate(), 4, RoundingMode.HALF_UP));
+                secondExchangeRate.setRate(BigDecimal.valueOf(1).divide(secondExchangeRate.getRate(), 20, RoundingMode.HALF_UP));
             }
 
             return ExchangeRateDto
@@ -176,7 +176,7 @@ public class ExchangeRateService {
                     )
                     .rate(firstExchangeRate.getRate().multiply(secondExchangeRate.getRate()))
                     .amount(amount)
-                    .convertedAmount(firstExchangeRate.getRate().multiply(secondExchangeRate.getRate()).multiply(amount).setScale(4, RoundingMode.HALF_UP))
+                    .convertedAmount(firstExchangeRate.getRate().multiply(secondExchangeRate.getRate()).multiply(amount).setScale(2, RoundingMode.HALF_UP))
                     .build();
         }
 
@@ -214,7 +214,7 @@ public class ExchangeRateService {
                                 .code(exchangeRate.getBaseCurrency().getCode())
                                 .name(exchangeRate.getBaseCurrency().getFullName())
                                 .sign(exchangeRate.getBaseCurrency().getSign())
-                                .build()
+                                .build()    
                 )
                 .targetCurrency(
                         CurrencyDto.builder()
@@ -226,7 +226,7 @@ public class ExchangeRateService {
                 )
                 .rate(exchangeRate.getRate())
                 .amount(amount)
-                .convertedAmount(amount.multiply(exchangeRate.getRate()).setScale(4, RoundingMode.HALF_UP))
+                .convertedAmount(amount.multiply(exchangeRate.getRate()).setScale(2, RoundingMode.HALF_UP))
                 .build();
     }
 
