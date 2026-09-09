@@ -3,6 +3,7 @@ package servlet;
 
 import dto.CurrencyDto;
 import exception.CurrenciesServletException;
+import exception.invalid.InvalidException;
 import exception.invalid.InvalidExclusionOfRequiredParameter;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -36,6 +37,9 @@ public class CurrenciesServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws UnsupportedEncodingException {
         req.setCharacterEncoding("UTF-8");
+        if (isParameterFromUrl(req))
+            throw new InvalidException("Parameters in POST request to /currencies must be in body and have 'application/x-www-form-urlencoded' media type");
+
         String name = req.getParameter("name");
         String code = req.getParameter("code");
         String sign = req.getParameter("sign");
@@ -50,5 +54,10 @@ public class CurrenciesServlet extends HttpServlet {
         } catch (IOException e) {
             throw new CurrenciesServletException("Failed to write JSON response", e);
         }
+    }
+
+    private boolean isParameterFromUrl(HttpServletRequest httpServletRequest) {
+        String queryString = httpServletRequest.getQueryString();
+        return queryString != null && !queryString.isBlank();
     }
 }
