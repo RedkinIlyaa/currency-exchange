@@ -3,6 +3,7 @@ package servlet;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dto.ExchangeRateDto;
 import exception.invalid.InvalidCurrencyCodeException;
+import exception.invalid.InvalidException;
 import exception.notfound.ExchangeRateNotFoundException;
 import exception.invalid.InvalidExclusionOfRequiredParameter;
 import jakarta.servlet.ServletOutputStream;
@@ -35,6 +36,9 @@ public class ExchangeRatesServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
+        if (isParameterFromUrl(req))
+            throw new InvalidException("Parameters in POST request to /exchangeRates must be in body and have 'application/x-www-form-urlencoded' media type");
+
         String baseCurrencyCode = req.getParameter("baseCurrencyCode");
         String targetCurrencyCode = req.getParameter("targetCurrencyCode");
         String rate = req.getParameter("rate");
@@ -71,5 +75,10 @@ public class ExchangeRatesServlet extends HttpServlet {
             throw new RuntimeException(e);
         }
 
+    }
+
+    private boolean isParameterFromUrl(HttpServletRequest httpServletRequest) {
+        String queryString = httpServletRequest.getQueryString();
+        return queryString != null && !queryString.isBlank();
     }
 }
