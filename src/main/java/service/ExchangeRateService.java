@@ -79,6 +79,9 @@ public class ExchangeRateService {
             throw new InvalidException("Rate parameter can't be 0 or less. Change it.");
         }
 
+        if (doesRateHaveMistake(bigDecimalRate))
+            throw new InvalidException("In the rate parameter, no more than 6 digits before the decimal point and no more than 6 digits after it are allowed.");
+
         Optional<ExchangeRate> updatedExchangeRate = exchangeRateDao.updateExchangeRate(baseCurrencyCode, targetCurrencyCode, bigDecimalRate);
         return updatedExchangeRate.map(
                 ExchangeRateService::createExchangeRateDTO
