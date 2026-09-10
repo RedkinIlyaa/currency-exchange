@@ -138,8 +138,8 @@ public class ExchangeRateDao {
         CROSS JOIN second_currency_neighbors scn
         INNER JOIN currencies c
         ON ocn.id = c.id
-        WHERE ocn.id = scn.id;
-        ORDER BY c.code
+        WHERE ocn.id = scn.id
+        ORDER BY c.code;
     """;
 
     public List<ExchangeRate> getExchangeRatesList() {
