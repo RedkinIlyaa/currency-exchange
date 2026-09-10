@@ -57,8 +57,10 @@ public class ExchangeRatePairServlet extends HttpServlet {
 
     @Override
     protected void doPatch(HttpServletRequest req, HttpServletResponse resp) {
-        String pathInfo = req.getPathInfo();
+        if (!req.getContentType().equals( "x-www-form-urlencoded"))
+            throw new InvalidException("This request might have header Content-Type - x-www-form-urlencoded");
 
+        String pathInfo = req.getPathInfo();
         if (pathInfo == null || pathInfo.equals("/")) {
             throw new InvalidExchangeRatePairException("Currencies codes are missing");
         }
