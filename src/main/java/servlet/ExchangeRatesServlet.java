@@ -58,6 +58,9 @@ public class ExchangeRatesServlet extends HttpServlet {
         if (baseCurrencyCode.equals(targetCurrencyCode))
             throw new InvalidCurrencyCodeException("Base and target currencies must be different");
 
+        if (isThereReverseCourse(baseCurrencyCode, targetCurrencyCode))
+            throw new InvalidCurrencyCodeException("There is an exchange rate: " + targetCurrencyCode + " - " + baseCurrencyCode + ". You can't create reverse exchange rate");
+
         Optional<ExchangeRateDto> exchangeRateDto = exchangeRateService.addNewExchangeRate(
                 baseCurrencyCode,
                 targetCurrencyCode,
@@ -80,5 +83,10 @@ public class ExchangeRatesServlet extends HttpServlet {
     private boolean isParameterFromUrl(HttpServletRequest httpServletRequest) {
         String queryString = httpServletRequest.getQueryString();
         return queryString != null && !queryString.isBlank();
+    }
+
+    private boolean isThereReverseCourse(String baseCurrencyCode, String targetCurrencyCode) {
+        Optional<ExchangeRateDto> exchangeRateDto = exchangeRateService.exchangeRateDtoByCurrenciesCodes(targetCurrencyCode, baseCurrencyCode);
+        return exchangeRateDto.isPresent();
     }
 }
