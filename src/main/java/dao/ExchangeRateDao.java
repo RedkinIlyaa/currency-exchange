@@ -139,6 +139,7 @@ public class ExchangeRateDao {
         INNER JOIN currencies c
         ON ocn.id = c.id
         WHERE ocn.id = scn.id;
+        ORDER BY c.code
     """;
 
     public List<ExchangeRate> getExchangeRatesList() {
