@@ -57,6 +57,9 @@ public class ExchangeRatePairServlet extends HttpServlet {
 
     @Override
     protected void doPatch(HttpServletRequest req, HttpServletResponse resp) {
+        if (req.getContentType() == null)
+            throw new InvalidException("Content-Type can't be null");
+
         if (!req.getContentType().contains( "application/x-www-form-urlencoded"))
             throw new InvalidException("This request might have header Content-Type - application/x-www-form-urlencoded");
 
