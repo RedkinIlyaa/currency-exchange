@@ -4,6 +4,7 @@ import dao.CurrencyDao;
 import dto.CurrencyDto;
 import entity.Currency;
 import exception.invalid.InvalidCurrencyCodeException;
+import exception.invalid.InvalidException;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -45,6 +46,12 @@ public class CurrencyService {
         if (doesCurrencyCodeHaveMistake(code))
             throw new InvalidCurrencyCodeException("Code parameter must be exactly 3 char and contain only a-z or A-Z letters");
 
+        if (doesCurrencyNameHaveMistake(name))
+            throw new InvalidException("Name parameter must be less than 128 characters long.");
+
+        if (doesCurrencySignHaveMistake(sign))
+            throw new InvalidException("Sign parameter must be less than 16 characters long.");
+
         Currency currency = Currency.builder()
                 .code(code.toUpperCase(Locale.ENGLISH))
                 .fullName(name)
@@ -62,6 +69,14 @@ public class CurrencyService {
 
     private boolean doesCurrencyCodeHaveMistake(String code) {
         return !(code.matches("[a-zA-Z]+") && (code.length() == 3));
+    }
+
+    private boolean doesCurrencyNameHaveMistake(String name) {
+        return name.length() > 128;
+    }
+
+    private boolean doesCurrencySignHaveMistake(String sign) {
+        return sign.length() > 16;
     }
 
     public static CurrencyService getInstance() {

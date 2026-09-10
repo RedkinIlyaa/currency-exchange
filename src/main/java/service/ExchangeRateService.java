@@ -49,6 +49,9 @@ public class ExchangeRateService {
             throw new InvalidTypeOfValueInBodyParameterException("Current rate parameter can't be written into db. It must be a digit");
         }
 
+        if (doesRateHaveMistake(bigDecimalRate))
+            throw new InvalidException("In the rate parameter, no more than 6 digits before the decimal point and no more than 6 digits after it are allowed.");
+
         if (bigDecimalRate.compareTo(BigDecimal.ZERO) <= 0) {
             throw new InvalidTypeOfValueInBodyParameterException("Rate parameter can't be 0 or less. Change it.");
         }
@@ -228,6 +231,12 @@ public class ExchangeRateService {
                 .amount(amount)
                 .convertedAmount(amount.multiply(exchangeRate.getRate()).setScale(2, RoundingMode.HALF_UP))
                 .build();
+    }
+
+    private boolean doesRateHaveMistake(BigDecimal rate) {
+        BigDecimal normalizedRate = rate.stripTrailingZeros();
+
+        return normalizedRate.precision() > 6 || normalizedRate.scale() > 6;
     }
 
     public static ExchangeRateService getInstance() {
