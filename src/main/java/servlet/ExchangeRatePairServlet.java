@@ -103,8 +103,8 @@ public class ExchangeRatePairServlet extends HttpServlet {
             String[] keyAndValue = parameterPair.split("=");
 
             if (keyAndValue.length != 2) {
-                String encodedKey = URLDecoder.decode(keyAndValue[0], StandardCharsets.UTF_8);
-                throw new InvalidException("Parameter " + encodedKey + " doesn't have a value.");
+                String decodedKey = URLDecoder.decode(keyAndValue[0], StandardCharsets.UTF_8);
+                throw new InvalidException("Parameter " + decodedKey + " doesn't have a value.");
             }
 
             String decodedKey = URLDecoder.decode(keyAndValue[0], StandardCharsets.UTF_8);

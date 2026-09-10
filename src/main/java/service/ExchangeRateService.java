@@ -235,8 +235,17 @@ public class ExchangeRateService {
 
     private boolean doesRateHaveMistake(BigDecimal rate) {
         BigDecimal normalizedRate = rate.stripTrailingZeros();
+        int integerDigits = Math.max(
+                normalizedRate.precision() - normalizedRate.scale(),
+                0
+        );
 
-        return normalizedRate.precision() > 6 || normalizedRate.scale() > 6;
+        int fractionalDigits = Math.max(
+                normalizedRate.scale(),
+                0
+        );
+
+        return integerDigits > 6 || fractionalDigits > 6;
     }
 
     public static ExchangeRateService getInstance() {
