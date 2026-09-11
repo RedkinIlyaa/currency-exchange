@@ -2,6 +2,8 @@ package servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dto.ExchangeRateDto;
+import exception.exist.AlreadyExistsException;
+import exception.exist.ExchangeRateAlreadyExistsException;
 import exception.invalid.InvalidCurrencyCodeException;
 import exception.invalid.InvalidException;
 import exception.notfound.ExchangeRateNotFoundException;
@@ -59,7 +61,7 @@ public class ExchangeRatesServlet extends HttpServlet {
             throw new InvalidCurrencyCodeException("Base and target currencies must be different");
 
         if (isThereReverseCourse(baseCurrencyCode, targetCurrencyCode))
-            throw new InvalidCurrencyCodeException("There is an exchange rate: " + targetCurrencyCode + " - " + baseCurrencyCode + ". You can't create reverse exchange rate");
+            throw new ExchangeRateAlreadyExistsException("There is an exchange rate: " + targetCurrencyCode + " - " + baseCurrencyCode + ". You can't create reverse exchange rate");
 
         Optional<ExchangeRateDto> exchangeRateDto = exchangeRateService.addNewExchangeRate(
                 baseCurrencyCode,
