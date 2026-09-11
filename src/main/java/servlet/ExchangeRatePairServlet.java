@@ -60,7 +60,7 @@ public class ExchangeRatePairServlet extends HttpServlet {
         if (req.getContentType() == null)
             throw new InvalidException("Content-Type can't be null");
 
-        if (!req.getContentType().contains( "application/x-www-form-urlencoded"))
+        if (!req.getContentType().contains("application/x-www-form-urlencoded"))
             throw new InvalidException("This request might have header Content-Type - application/x-www-form-urlencoded");
 
         String pathInfo = req.getPathInfo();
@@ -98,12 +98,12 @@ public class ExchangeRatePairServlet extends HttpServlet {
             if (list.size() != 1)
                 throw new InvalidCountOfBodyLinesException("Body should contain only one line of parameters.");
 
-            String[] split = list.getFirst().split("&");
-            if (split.length != 1)
+            String[] splitFirstLine = list.getFirst().split("&", -1);
+            if (splitFirstLine.length != 1)
                 throw new InvalidCountOfBodyParametersException("Body should contain only one(key + value) pair of parameters");
 
-            String parameterPair = split[0];
-            String[] keyAndValue = parameterPair.split("=");
+            String firstParameterPair = splitFirstLine[0];
+            String[] keyAndValue = firstParameterPair.split("=", 2);
 
             if (keyAndValue.length != 2) {
                 String decodedKey = URLDecoder.decode(keyAndValue[0], StandardCharsets.UTF_8);
