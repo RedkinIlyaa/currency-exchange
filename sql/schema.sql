@@ -9,9 +9,6 @@ create table currencies
     sign      varchar(16)  not null
 );
 
-alter table currencies
-    owner to postgres;
-
 create table exchange_rates
 (
     id                 serial
@@ -27,9 +24,6 @@ create table exchange_rates
     constraint currency_is_not_the_same
         check (base_currency_id <> target_currency_id)
 );
-
-alter table exchange_rates
-    owner to postgres;
 
 create unique index exchange_rates_unordered_pair_uq
     on exchange_rates (LEAST(base_currency_id, target_currency_id), GREATEST(base_currency_id, target_currency_id));
