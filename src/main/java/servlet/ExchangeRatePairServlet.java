@@ -122,9 +122,11 @@ public class ExchangeRatePairServlet extends HttpServlet {
             if (!decodedValue.matches("^-?\\d+(\\.\\d+)?$"))
                 throw new InvalidException("Rate parameter must contain only numbers.");
 
-            return URLDecoder.decode(keyAndValue[1], StandardCharsets.UTF_8);
+            return decodedValue;
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } catch (IllegalArgumentException illegalArgumentException) {
+            throw new InvalidException("Body contains invalid URL encoding.");
         }
     }
 }
