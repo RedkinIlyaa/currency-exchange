@@ -2,7 +2,6 @@ package servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dto.ExchangeRateDto;
-import exception.invalid.InvalidCurrencyCodeException;
 import exception.invalid.InvalidException;
 import exception.notfound.ExchangeRateNotFoundException;
 import exception.invalid.InvalidExclusionOfRequiredParameter;
@@ -15,7 +14,6 @@ import service.ExchangeRateService;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 
 @WebServlet(value = "/exchangeRates")
@@ -51,12 +49,6 @@ public class ExchangeRatesServlet extends HttpServlet {
 
         if (rate == null || rate.isBlank())
             throw new InvalidExclusionOfRequiredParameter("Omitted parameter - rate in the request");
-
-        baseCurrencyCode = baseCurrencyCode.toUpperCase(Locale.ENGLISH);
-        targetCurrencyCode = targetCurrencyCode.toUpperCase(Locale.ENGLISH);
-
-        if (baseCurrencyCode.equals(targetCurrencyCode))
-            throw new InvalidCurrencyCodeException("Base and target currencies must be different");
 
         Optional<ExchangeRateDto> exchangeRateDto = exchangeRateService.addNewExchangeRate(
                 baseCurrencyCode,

@@ -40,11 +40,17 @@ public class ExchangeRateService {
     }
 
     public Optional<ExchangeRateDto> addNewExchangeRate(String baseCurrencyCode, String targetCurrencyCode, String rate) {
-        if (isThereReverseCourse(baseCurrencyCode, targetCurrencyCode))
-            throw new ExchangeRateAlreadyExistsException("There is an exchange rate: " + targetCurrencyCode + " - " + baseCurrencyCode + ". You can't create reverse exchange rate");
-
         if (doesCurrencyCodeHaveMistake(baseCurrencyCode) || doesCurrencyCodeHaveMistake(targetCurrencyCode))
             throw new InvalidCurrencyCodeException("Code parameter must be exactly 3 char and contain only a-z or A-Z letters");
+
+        baseCurrencyCode = baseCurrencyCode.toUpperCase(Locale.ENGLISH);
+        targetCurrencyCode = targetCurrencyCode.toUpperCase(Locale.ENGLISH);
+
+        if (baseCurrencyCode.equals(targetCurrencyCode))
+            throw new InvalidCurrencyCodeException("Base and target currencies must be different");
+
+        if (isThereReverseCourse(baseCurrencyCode, targetCurrencyCode))
+            throw new ExchangeRateAlreadyExistsException("There is an exchange rate: " + targetCurrencyCode + " - " + baseCurrencyCode + ". You can't create reverse exchange rate");
 
         BigDecimal bigDecimalRate;
         try {
