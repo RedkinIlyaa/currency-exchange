@@ -13,4 +13,8 @@
         <error-code>405</error-code>
         <location>/WEB-INF/errors/405.json</location>
     </error-page>
+    
+    <error-page>
+        <location>/WEB-INF/errors/500.json</location>
+    </error-page>
 </web-app>
