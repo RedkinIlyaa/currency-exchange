@@ -15,6 +15,7 @@
     </error-page>
     
     <error-page>
+        <error-code>500</error-code>
         <location>/WEB-INF/errors/500.json</location>
     </error-page>
 </web-app>
