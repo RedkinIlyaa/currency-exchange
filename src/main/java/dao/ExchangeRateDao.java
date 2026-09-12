@@ -284,7 +284,7 @@ public class ExchangeRateDao {
             }
         } catch (SQLException e) {
 
-            if (e.getSQLState().equals("23505")) {
+            if ("23505".equals(e.getSQLState())) {
                 throw new ExchangeRateAlreadyExistsException("Exchange rate with baseCurrencyCode = " + baseCurrencyCode + " and targetCurrencyCode = " + targetCurrencyCode + " is already exists.", e);
             }
 
