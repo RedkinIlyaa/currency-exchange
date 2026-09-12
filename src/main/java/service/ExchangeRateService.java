@@ -6,6 +6,7 @@ import dto.CurrencyDto;
 import dto.ExchangeRateDto;
 import entity.Currency;
 import entity.ExchangeRate;
+import exception.exist.ExchangeRateAlreadyExistsException;
 import exception.invalid.InvalidCurrencyCodeException;
 import exception.invalid.InvalidException;
 import exception.invalid.InvalidTypeOfValueInBodyParameterException;
@@ -39,6 +40,9 @@ public class ExchangeRateService {
     }
 
     public Optional<ExchangeRateDto> addNewExchangeRate(String baseCurrencyCode, String targetCurrencyCode, String rate) {
+        if (isThereReverseCourse(baseCurrencyCode, targetCurrencyCode))
+            throw new ExchangeRateAlreadyExistsException("There is an exchange rate: " + targetCurrencyCode + " - " + baseCurrencyCode + ". You can't create reverse exchange rate");
+
         if (doesCurrencyCodeHaveMistake(baseCurrencyCode) || doesCurrencyCodeHaveMistake(targetCurrencyCode))
             throw new InvalidCurrencyCodeException("Code parameter must be exactly 3 char and contain only a-z or A-Z letters");
 
@@ -60,6 +64,11 @@ public class ExchangeRateService {
         return addedExchangeRate.map(
                 ExchangeRateService::createExchangeRateDTO
         );
+    }
+
+    private boolean isThereReverseCourse(String baseCurrencyCode, String targetCurrencyCode) {
+        Optional<ExchangeRateDto> exchangeRateDto = exchangeRateService.exchangeRateDtoByCurrenciesCodes(targetCurrencyCode, baseCurrencyCode);
+        return exchangeRateDto.isPresent();
     }
 
     private boolean doesCurrencyCodeHaveMistake(String code) {
