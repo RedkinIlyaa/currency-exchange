@@ -342,8 +342,8 @@ public class ExchangeRateDao {
                 preparedStatement3.setString(3, codeOfIntermediateCurrency);
                 preparedStatement3.setString(4, baseCurrencyCode);
                 ResultSet resultSet3 = preparedStatement3.executeQuery();
-                resultSet3.next();
-
+                if (!resultSet3.next())
+                    throw new ExchangeRateNotFoundException("Failed to get exchange rate: " + baseCurrencyCode + " - " + targetCurrencyCode);
                 exchangeRateList.add(
                         ExchangeRate.builder()
                         .baseCurrency(Currency.builder()
@@ -369,7 +369,10 @@ public class ExchangeRateDao {
                 preparedStatement3.setString(3, codeOfIntermediateCurrency);
                 preparedStatement3.setString(4, targetCurrencyCode);
                 ResultSet resultSet4 = preparedStatement3.executeQuery();
-                resultSet4.next();
+
+                if (!resultSet4.next())
+                    throw new ExchangeRateNotFoundException("Failed to get exchange rate: " + baseCurrencyCode + " - " + targetCurrencyCode);
+
                 exchangeRateList.add(
                     ExchangeRate.builder()
                     .baseCurrency(Currency.builder()
@@ -396,7 +399,7 @@ public class ExchangeRateDao {
             throw new ExchangeRateNotFoundException("Our service can't calculate transfer from: " + baseCurrencyCode + " to: " + targetCurrencyCode);
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new ExchangeRateDaoException("Failed to get transfer from " + baseCurrencyCode + " to " + targetCurrencyCode, e);
         }
     }
 
