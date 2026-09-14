@@ -154,7 +154,7 @@ public class ExchangeRateService {
                 Currency currency = exchangeRate.getBaseCurrency();
                 exchangeRate.setBaseCurrency(exchangeRate.getTargetCurrency());
                 exchangeRate.setTargetCurrency(currency);
-                exchangeRate.setRate(BigDecimal.valueOf(1).divide(exchangeRate.getRate(), 20, RoundingMode.HALF_UP));
+                exchangeRate.setRate(BigDecimal.ONE.divide(exchangeRate.getRate(), 20, RoundingMode.HALF_UP));
             }
 
             return createBigExchangeRate(amount, exchangeRate);
@@ -167,14 +167,14 @@ public class ExchangeRateService {
                 Currency currency = firstExchangeRate.getBaseCurrency();
                 firstExchangeRate.setBaseCurrency(firstExchangeRate.getTargetCurrency());
                 firstExchangeRate.setTargetCurrency(currency);
-                firstExchangeRate.setRate(BigDecimal.valueOf(1).divide(firstExchangeRate.getRate(), 20, RoundingMode.HALF_UP));
+                firstExchangeRate.setRate(BigDecimal.ONE.divide(firstExchangeRate.getRate(), 20, RoundingMode.HALF_UP));
             }
 
             if (!secondExchangeRate.getTargetCurrency().getCode().equals(targetCurrencyCode)) {
                 Currency currency = secondExchangeRate.getBaseCurrency();
                 secondExchangeRate.setBaseCurrency(secondExchangeRate.getTargetCurrency());
                 secondExchangeRate.setTargetCurrency(currency);
-                secondExchangeRate.setRate(BigDecimal.valueOf(1).divide(secondExchangeRate.getRate(), 20, RoundingMode.HALF_UP));
+                secondExchangeRate.setRate(BigDecimal.ONE.divide(secondExchangeRate.getRate(), 20, RoundingMode.HALF_UP));
             }
 
             return ExchangeRateDto
