@@ -13,7 +13,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import service.ExchangeRateService;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @WebServlet(value = "/exchangeRates")
@@ -33,9 +35,28 @@ public class ExchangeRatesServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws UnsupportedEncodingException {
+        String contentType = req.getContentType();
+
+        String mediaType = contentType == null
+                ? null
+                : contentType.split(";", 2)[0].trim();
+
+        if (!"application/x-www-form-urlencoded".equalsIgnoreCase(mediaType)) {
+            throw new InvalidException("This request might have header Content-Type - application/x-www-form-urlencoded");
+        }
+
+        req.setCharacterEncoding("UTF-8");
         if (isParameterFromUrl(req))
             throw new InvalidException("Parameters in POST request to /exchangeRates must be in body and have 'application/x-www-form-urlencoded' media type");
+
+        Map<String, String[]> parameterMap = checkRequestParameters(req);
+
+        for (Map.Entry<String, String[]> entry: parameterMap.entrySet()) {
+            String[] value = entry.getValue();
+            if (value.length != 1)
+                throw new InvalidException("Parameter " + entry.getKey() + " has more than one value");
+        }
 
         String baseCurrencyCode = req.getParameter("baseCurrencyCode");
         String targetCurrencyCode = req.getParameter("targetCurrencyCode");
@@ -67,6 +88,19 @@ public class ExchangeRatesServlet extends HttpServlet {
             throw new RuntimeException(e);
         }
 
+    }
+
+    private static Map<String, String[]> checkRequestParameters(HttpServletRequest req) {
+        Map<String, String[]> parameterMap = req.getParameterMap();
+        if (parameterMap.size() != 3)
+            throw new InvalidException("There must be exactly 3 parameters in POST /exchangeRates: baseCurrencyCode, targetCurrencyCode, rate");
+        if (!parameterMap.containsKey("baseCurrencyCode"))
+            throw new InvalidException("Missing baseCurrencyCode parameter in the request");
+        if (!parameterMap.containsKey("targetCurrencyCode"))
+            throw new InvalidException("Missing targetCurrencyCode parameter in the request");
+        if (!parameterMap.containsKey("rate"))
+            throw new InvalidException("Missing rate parameter in the request");
+        return parameterMap;
     }
 
     private boolean isParameterFromUrl(HttpServletRequest httpServletRequest) {
