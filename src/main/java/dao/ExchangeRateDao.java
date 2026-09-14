@@ -28,6 +28,7 @@ public class ExchangeRateDao {
             ON er.base_currency_id = base.id
             INNER JOIN currencies target
             ON er.target_currency_id = target.id
+            ORDER BY er.id
             """;
 
     public static final String GET_EXCHANGE_RATE_BY_CURRENCY_CODE = """
