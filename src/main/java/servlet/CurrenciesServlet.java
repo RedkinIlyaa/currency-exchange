@@ -82,11 +82,16 @@ public class CurrenciesServlet extends HttpServlet {
     }
 
     private static Map<String, String[]> checkRequestParameters(HttpServletRequest req) {
-        Map<String, String[]> parameterMap = req.getParameterMap();
+        Map<String, String[]> parameterMap;
+        try {
+            parameterMap = req.getParameterMap();
+        } catch (IllegalStateException e) {
+            throw new InvalidException("Request parameters are malformed or incorrectly encoded.");
+        }
         if (parameterMap.size() != 3)
             throw new InvalidException("There must be exactly 3 parameters in POST /currencies: name, code, sign");
         if (!parameterMap.containsKey("name"))
-            throw new InvalidException("Missing name parameter in the request");
+            throw new InvalidException("Missing name parameter in the request");    
         if (!parameterMap.containsKey("code"))
             throw new InvalidException("Missing code parameter in the request");
         if (!parameterMap.containsKey("sign"))

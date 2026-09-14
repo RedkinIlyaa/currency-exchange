@@ -91,7 +91,12 @@ public class ExchangeRatesServlet extends HttpServlet {
     }
 
     private static Map<String, String[]> checkRequestParameters(HttpServletRequest req) {
-        Map<String, String[]> parameterMap = req.getParameterMap();
+        Map<String, String[]> parameterMap;
+        try {
+            parameterMap = req.getParameterMap();
+        } catch (IllegalStateException e) {
+            throw new InvalidException("Request parameters are malformed or incorrectly encoded.");
+        }
         if (parameterMap.size() != 3)
             throw new InvalidException("There must be exactly 3 parameters in POST /exchangeRates: baseCurrencyCode, targetCurrencyCode, rate");
         if (!parameterMap.containsKey("baseCurrencyCode"))
