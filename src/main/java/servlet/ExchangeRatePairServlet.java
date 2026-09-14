@@ -13,6 +13,7 @@ import service.ExchangeRateService;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -56,7 +57,7 @@ public class ExchangeRatePairServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPatch(HttpServletRequest req, HttpServletResponse resp) {
+    protected void doPatch(HttpServletRequest req, HttpServletResponse resp) throws UnsupportedEncodingException {
         String contentType = req.getContentType();
 
         String mediaType = contentType == null
@@ -66,6 +67,10 @@ public class ExchangeRatePairServlet extends HttpServlet {
         if (!"application/x-www-form-urlencoded".equalsIgnoreCase(mediaType)) {
             throw new InvalidException("This request might have header Content-Type - application/x-www-form-urlencoded");
         }
+
+        req.setCharacterEncoding("UTF-8");
+        if (isParameterFromUrl(req))
+            throw new InvalidException("Parameters in PATCH request to /exchangeRate/ must be in body and have 'application/x-www-form-urlencoded' media type");
 
         String pathInfo = req.getPathInfo();
         if (pathInfo == null || pathInfo.equals("/")) {
@@ -128,5 +133,10 @@ public class ExchangeRatePairServlet extends HttpServlet {
         } catch (IllegalArgumentException illegalArgumentException) {
             throw new InvalidException("Body contains invalid URL encoding.");
         }
+    }
+
+    private boolean isParameterFromUrl(HttpServletRequest httpServletRequest) {
+        String queryString = httpServletRequest.getQueryString();
+        return queryString != null && !queryString.isBlank();
     }
 }
