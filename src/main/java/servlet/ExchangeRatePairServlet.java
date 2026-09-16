@@ -123,11 +123,7 @@ public class ExchangeRatePairServlet extends HttpServlet {
             if (!decodedKey.equals("rate"))
                 throw new InvalidNameOfBodyParameterException("Body should contain only one(key + value) pair. Where key = 'rate'. Your key = '" + decodedKey + "'");
 
-            String decodedValue = URLDecoder.decode(keyAndValue[1], StandardCharsets.UTF_8);
-            if (!decodedValue.matches("^-?\\d+(\\.\\d+)?$"))
-                throw new InvalidException("Rate parameter must contain only numbers.");
-
-            return decodedValue;
+            return URLDecoder.decode(keyAndValue[1], StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (IllegalArgumentException illegalArgumentException) {

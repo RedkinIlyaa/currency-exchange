@@ -8,11 +8,10 @@ import entity.Currency;
 import entity.ExchangeRate;
 import exception.exist.ExchangeRateAlreadyExistsException;
 import exception.invalid.InvalidCurrencyCodeException;
-import exception.invalid.InvalidException;
-import exception.invalid.InvalidTypeOfValueInBodyParameterException;
 import exception.notfound.CurrencyNotFoundException;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import validator.DecimalValidator;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -49,22 +48,10 @@ public class ExchangeRateService {
         if (baseCurrencyCode.equals(targetCurrencyCode))
             throw new InvalidCurrencyCodeException("Base and target currencies must be different");
 
+        BigDecimal bigDecimalRate = DecimalValidator.parseRate(rate);
+
         if (isThereReverseCourse(baseCurrencyCode, targetCurrencyCode))
             throw new ExchangeRateAlreadyExistsException("There is an exchange rate: " + targetCurrencyCode + " - " + baseCurrencyCode + ". You can't create reverse exchange rate");
-
-        BigDecimal bigDecimalRate;
-        try {
-            bigDecimalRate = new BigDecimal(rate);
-        } catch (NumberFormatException nfeException) {
-            throw new InvalidTypeOfValueInBodyParameterException("Current rate parameter can't be written into db. It must be a digit");
-        }
-
-        if (doesRateHaveMistake(bigDecimalRate))
-            throw new InvalidException("In the rate parameter, no more than 6 digits before the decimal point and no more than 6 digits after it are allowed.");
-
-        if (bigDecimalRate.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new InvalidTypeOfValueInBodyParameterException("Rate parameter can't be 0 or less. Change it.");
-        }
 
         Optional<ExchangeRate> addedExchangeRate = exchangeRateDao.addExchangeRate(baseCurrencyCode, targetCurrencyCode, bigDecimalRate);
         return addedExchangeRate.map(
@@ -83,19 +70,7 @@ public class ExchangeRateService {
 
     public Optional<ExchangeRateDto> patchToExchangeRate(String baseCurrencyCode, String targetCurrencyCode, String rate) {
 
-        BigDecimal bigDecimalRate;
-        try {
-            bigDecimalRate = new BigDecimal(rate);
-        } catch (NumberFormatException nfeException) {
-            throw new InvalidTypeOfValueInBodyParameterException("Current rate parameter can't be written into db. It must be a digit.");
-        }
-
-        if (bigDecimalRate.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new InvalidException("Rate parameter can't be 0 or less. Change it.");
-        }
-
-        if (doesRateHaveMistake(bigDecimalRate))
-            throw new InvalidException("In the rate parameter, no more than 6 digits before the decimal point and no more than 6 digits after it are allowed.");
+        BigDecimal bigDecimalRate = DecimalValidator.parseRate(rate);
 
         Optional<ExchangeRate> updatedExchangeRate = exchangeRateDao.updateExchangeRate(baseCurrencyCode, targetCurrencyCode, bigDecimalRate);
         return updatedExchangeRate.map(
@@ -120,16 +95,7 @@ public class ExchangeRateService {
         if (baseCurrencyCode.equals(targetCurrencyCode))
             throw new InvalidCurrencyCodeException("Base and target currencies must be different");
 
-        BigDecimal amount;
-        try {
-            amount = new BigDecimal(stringAmount);
-        } catch (NumberFormatException nfeException) {
-            throw new InvalidTypeOfValueInBodyParameterException("Current amount parameter can't be written into db. It must be a digit.");
-        }
-
-        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new InvalidException("Amount parameter can't be 0 or less. Change it.");
-        }
+        BigDecimal amount = DecimalValidator.parseAmount(stringAmount);
 
         // check baseCurrency in currencies table by baseCurrencyCode
         Optional<Currency> baseCurrency = currencyDao.findByCode(baseCurrencyCode);
@@ -249,15 +215,6 @@ public class ExchangeRateService {
                 .amount(amount)
                 .convertedAmount(amount.multiply(exchangeRate.getRate()).setScale(2, RoundingMode.HALF_UP))
                 .build();
-    }
-
-    private boolean doesRateHaveMistake(BigDecimal rate) {
-        BigDecimal normalizedRate = rate.stripTrailingZeros();
-        long integerDigits = Math.max((long) normalizedRate.precision() - normalizedRate.scale(), 0L);
-
-        long fractionalDigits = Math.max((long) normalizedRate.scale(), 0L);
-
-        return integerDigits > 6 || fractionalDigits > 6;
     }
 
     public static ExchangeRateService getInstance() {
