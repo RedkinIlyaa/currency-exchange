@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -24,6 +23,7 @@ import java.util.Optional;
 public class ExchangeRatePairServlet extends HttpServlet {
     private final ExchangeRateService exchangeRateService = ExchangeRateService.getInstance();
     private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final int MAX_PATCH_BODY_LENGTH = 64;
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
@@ -101,33 +101,80 @@ public class ExchangeRatePairServlet extends HttpServlet {
     }
 
     private String getFormParameter(HttpServletRequest req) {
+        String body = readRequestBody(req);
+
+        if (body.isEmpty()
+            || body.indexOf('\n') >= 0
+            || body.indexOf('\r') >= 0) {
+            throw new InvalidCountOfBodyLinesException(
+                    "Body should contain exactly one line"
+            );
+        }
+
+        String[] parameters = body.split("&", -1);
+
+        if (parameters.length != 1) {
+            throw new InvalidCountOfBodyParametersException(
+                    "Body should contain exactly one key-value pair"
+            );
+        }
+
+        String[] keyAndValue = parameters[0].split("=", 2);
+
+        if (keyAndValue.length != 2) {
+            throw new InvalidException(
+                    "Body parameter doesn't have a value"
+            );
+        }
+
         try {
-            BufferedReader reader = req.getReader();
-            List<String> list = reader.lines().toList();
-            if (list.size() != 1)
-                throw new InvalidCountOfBodyLinesException("Body should contain only one line of parameters.");
+            String decodedKey = URLDecoder.decode(
+                    keyAndValue[0],
+                    StandardCharsets.UTF_8
+            );
 
-            String[] splitFirstLine = list.getFirst().split("&", -1);
-            if (splitFirstLine.length != 1)
-                throw new InvalidCountOfBodyParametersException("Body should contain only one(key + value) pair of parameters");
+            String decodedValue = URLDecoder.decode(
+                    keyAndValue[1],
+                    StandardCharsets.UTF_8
+            );
 
-            String firstParameterPair = splitFirstLine[0];
-            String[] keyAndValue = firstParameterPair.split("=", 2);
-
-            if (keyAndValue.length != 2) {
-                String decodedKey = URLDecoder.decode(keyAndValue[0], StandardCharsets.UTF_8);
-                throw new InvalidException("Parameter " + decodedKey + " doesn't have a value.");
+            if (!decodedKey.equals("rate")) {
+                throw new InvalidNameOfBodyParameterException(
+                        "The only allowed body parameter is 'rate'"
+                );
             }
 
-            String decodedKey = URLDecoder.decode(keyAndValue[0], StandardCharsets.UTF_8);
-            if (!decodedKey.equals("rate"))
-                throw new InvalidNameOfBodyParameterException("Body should contain only one(key + value) pair. Where key = 'rate'. Your key = '" + decodedKey + "'");
+            return decodedValue;
+        } catch (IllegalArgumentException e) {
+            throw new InvalidException(
+                    "Body contains invalid URL encoding"
+            );
+        }
+    }
 
-            return URLDecoder.decode(keyAndValue[1], StandardCharsets.UTF_8);
+    private String readRequestBody(HttpServletRequest req) {
+        if (req.getContentLengthLong() > MAX_PATCH_BODY_LENGTH) {
+            throw new InvalidException("Request body is too large");
+        }
+
+        try {
+            BufferedReader reader = req.getReader();
+            StringBuilder body = new StringBuilder();
+            char[] buffer = new char[32];
+
+            int read;
+
+            while ((read = reader.read(buffer)) != -1) {
+                if (body.length() + read > MAX_PATCH_BODY_LENGTH) {
+                    throw new InvalidException("Request body is too large");
+                }
+
+                body.append(buffer, 0, read);
+            }
+
+            return body.toString();
         } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalArgumentException illegalArgumentException) {
-            throw new InvalidException("Body contains invalid URL encoding.");
+            throw new RuntimeException("Failed to read request body", e);
         }
     }
 
