@@ -60,7 +60,7 @@ public class ExchangeRateService {
     }
 
     private boolean isThereReverseCourse(String baseCurrencyCode, String targetCurrencyCode) {
-        return exchangeRateDao.getExchangeRateByCurrencyCodes(targetCurrencyCode.toUpperCase(Locale.ENGLISH), targetCurrencyCode.toUpperCase(Locale.ENGLISH)).isPresent();
+        return exchangeRateDao.getExchangeRateByCurrencyCodes(targetCurrencyCode.toUpperCase(Locale.ENGLISH), baseCurrencyCode.toUpperCase(Locale.ENGLISH)).isPresent();
     }
 
     private boolean doesCurrencyCodeHaveMistake(String code) {
