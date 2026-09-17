@@ -31,14 +31,26 @@ public class PropertiesUtil {
     }
 
     public static String getUrl() {
-        return PROPERTIES.getProperty("db.url");
+        return getRequiredProperty("db.url");
     }
 
     public static String getUser() {
-        return PROPERTIES.getProperty("db.user");
+        return getRequiredProperty("db.user");
     }
 
     public static String getPassword() {
-        return PROPERTIES.getProperty("db.password");
+        return getRequiredProperty("db.password");
+    }
+
+    private static String getRequiredProperty(String key) {
+        String value = PROPERTIES.getProperty(key);
+
+        if (value == null || value.isBlank()) {
+            throw new ConfigurationException(
+                    "Required property '" + key + "' is missing"
+            );
+        }
+
+        return value;
     }
 }
