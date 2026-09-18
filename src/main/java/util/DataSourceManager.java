@@ -12,10 +12,13 @@ import java.sql.SQLException;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class DataSourceManager {
 
-    private static final HikariConfig hikariConfig = new HikariConfig();
-    private static final HikariDataSource hikariDataSource;
+    private static HikariDataSource hikariDataSource;
 
-    static {
+    public static void createHikariCP() {
+        if (hikariDataSource != null && !hikariDataSource.isClosed())
+            throw new IllegalArgumentException("HikariCP pool is already initialized");
+
+        HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl(PropertiesUtil.getUrl());
         hikariConfig.setUsername(PropertiesUtil.getUser());
         hikariConfig.setPassword(PropertiesUtil.getPassword());
@@ -26,6 +29,12 @@ public class DataSourceManager {
     }
 
     public static Connection getConnection() {
+        if (hikariDataSource == null)
+            throw new IllegalStateException("HikariCP pool is not initialized");
+
+        if (hikariDataSource.isClosed())
+            throw new IllegalStateException("HikariCP pool is already closed");
+
         try {
             return hikariDataSource.getConnection();
         } catch (SQLException e) {
@@ -33,4 +42,10 @@ public class DataSourceManager {
         }
     }
 
+    public static synchronized void closeHikariCP() {
+        if (hikariDataSource != null) {
+            hikariDataSource.close();
+            hikariDataSource = null;
+        }
+    }
 }
