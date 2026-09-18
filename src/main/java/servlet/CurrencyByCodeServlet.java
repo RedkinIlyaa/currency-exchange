@@ -16,7 +16,7 @@ import java.util.Optional;
 
 
 @WebServlet(value = "/currency/*")
-    public class CurrencyByCodeServlet extends HttpServlet {
+public class CurrencyByCodeServlet extends HttpServlet {
     private final CurrencyService currencyService = CurrencyService.getInstance();
     private static final ObjectMapper objectMapper = new ObjectMapper();
 

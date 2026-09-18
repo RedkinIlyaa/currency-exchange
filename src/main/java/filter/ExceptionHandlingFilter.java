@@ -17,8 +17,8 @@ import java.util.Map;
 
 @WebFilter(value = "/*")
 public class ExceptionHandlingFilter implements Filter {
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-    private static final Logger logger = LoggerFactory.getLogger(ExceptionHandlingFilter.class);
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExceptionHandlingFilter.class);
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
@@ -35,7 +35,7 @@ public class ExceptionHandlingFilter implements Filter {
                 httpServletResponse.setStatus(HttpServletResponse.SC_CONFLICT);
                 Map<String, String> map = new HashMap<>();
                 map.put("message", alreadyExistsException.getMessage());
-                objectMapper.writeValue(httpServletResponse.getOutputStream(), map);
+                OBJECT_MAPPER.writeValue(httpServletResponse.getOutputStream(), map);
         } catch (InvalidException invalidException) {
             httpServletResponse.reset();
             httpServletResponse.setCharacterEncoding(StandardCharsets.UTF_8.name());
@@ -43,7 +43,7 @@ public class ExceptionHandlingFilter implements Filter {
             httpServletResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             Map<String, String> map = new HashMap<>();
             map.put("message", invalidException.getMessage());
-            objectMapper.writeValue(httpServletResponse.getOutputStream(), map);
+            OBJECT_MAPPER.writeValue(httpServletResponse.getOutputStream(), map);
         } catch (NotFoundException notFoundException) {
             httpServletResponse.reset();
             httpServletResponse.setCharacterEncoding(StandardCharsets.UTF_8.name());
@@ -51,7 +51,7 @@ public class ExceptionHandlingFilter implements Filter {
             httpServletResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
             Map<String, String> map = new HashMap<>();
             map.put("message", notFoundException.getMessage());
-            objectMapper.writeValue(httpServletResponse.getOutputStream(), map);
+            OBJECT_MAPPER.writeValue(httpServletResponse.getOutputStream(), map);
         } catch (RuntimeException runtimeException) {
 
             if (httpServletResponse.isCommitted())
@@ -63,8 +63,8 @@ public class ExceptionHandlingFilter implements Filter {
             httpServletResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             Map<String, String> map = new HashMap<>();
             map.put("message", "Internal server error");
-            objectMapper.writeValue(httpServletResponse.getOutputStream(), map);
-            logger.error("Unhandled exception during request processing", runtimeException);
+            OBJECT_MAPPER.writeValue(httpServletResponse.getOutputStream(), map);
+            LOGGER.error("Unhandled exception during request processing", runtimeException);
         }
     }
 }

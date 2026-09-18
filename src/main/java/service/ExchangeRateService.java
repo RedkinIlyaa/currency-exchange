@@ -21,7 +21,7 @@ import java.util.Optional;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ExchangeRateService {
-    private static final ExchangeRateService exchangeRateService = new ExchangeRateService();
+    private static final ExchangeRateService EXCHANGE_RATE_SERVICE = new ExchangeRateService();
     private final ExchangeRateDao exchangeRateDao = ExchangeRateDao.getInstance();
 
     public List<ExchangeRateDto> getAllExchangeRates() {
@@ -50,7 +50,7 @@ public class ExchangeRateService {
 
         BigDecimal bigDecimalRate = DecimalValidator.parseRate(rate);
 
-        if (isThereReverseCourse(baseCurrencyCode, targetCurrencyCode))
+        if (doesReverseRateExist(baseCurrencyCode, targetCurrencyCode))
             throw new ExchangeRateAlreadyExistsException("There is an exchange rate: " + targetCurrencyCode + " - " + baseCurrencyCode + ". You can't create reverse exchange rate");
 
         Optional<ExchangeRate> addedExchangeRate = exchangeRateDao.addExchangeRate(baseCurrencyCode, targetCurrencyCode, bigDecimalRate);
@@ -59,7 +59,7 @@ public class ExchangeRateService {
         );
     }
 
-    private boolean isThereReverseCourse(String baseCurrencyCode, String targetCurrencyCode) {
+    private boolean doesReverseRateExist(String baseCurrencyCode, String targetCurrencyCode) {
         return exchangeRateDao.getExchangeRateByCurrencyCodes(targetCurrencyCode.toUpperCase(Locale.ENGLISH), baseCurrencyCode.toUpperCase(Locale.ENGLISH)).isPresent();
     }
 
@@ -122,7 +122,7 @@ public class ExchangeRateService {
                 exchangeRate.setRate(BigDecimal.ONE.divide(exchangeRate.getRate(), 20, RoundingMode.HALF_UP));
             }
 
-            return createBigExchangeRate(amount, exchangeRate);
+            return createBigExchangeRateDTO(amount, exchangeRate);
 
         } else if (exchangeRates.size() == 2) { // size == 2, if there is an intermediate currency
             ExchangeRate firstExchangeRate = exchangeRates.get(0);
@@ -192,7 +192,7 @@ public class ExchangeRateService {
                 .build();
     }
 
-    private static ExchangeRateDto createBigExchangeRate(BigDecimal amount, ExchangeRate exchangeRate) {
+    private static ExchangeRateDto createBigExchangeRateDTO(BigDecimal amount, ExchangeRate exchangeRate) {
         return ExchangeRateDto.builder()
                 .baseCurrency(
                         CurrencyDto.builder()
@@ -217,6 +217,6 @@ public class ExchangeRateService {
     }
 
     public static ExchangeRateService getInstance() {
-        return exchangeRateService;
+        return EXCHANGE_RATE_SERVICE;
     }
 }

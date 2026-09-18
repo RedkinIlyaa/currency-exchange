@@ -47,7 +47,7 @@ public class CurrencyService {
             throw new InvalidCurrencyCodeException("Code parameter must be exactly 3 char and contain only a-z or A-Z letters");
 
         if (doesCurrencyNameHaveMistake(name))
-            throw new InvalidException("Name parameter must be less than 128 characters long.");
+            throw new InvalidException("Name parameter must be no more than 128 characters long.");
 
         if (doesCurrencySignHaveMistake(sign))
             throw new InvalidException("Sign parameter must be less than 16 characters long.");
