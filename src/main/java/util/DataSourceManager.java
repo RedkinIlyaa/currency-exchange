@@ -16,7 +16,7 @@ public class DataSourceManager {
 
     public static void createHikariCP() {
         if (hikariDataSource != null && !hikariDataSource.isClosed())
-            throw new IllegalArgumentException("HikariCP pool is already initialized");
+            throw new IllegalStateException("HikariCP pool is already initialized");
 
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl(PropertiesUtil.getUrl());
