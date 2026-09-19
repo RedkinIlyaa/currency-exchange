@@ -50,7 +50,7 @@ public class CurrencyService {
             throw new InvalidException("Name parameter must be no more than 128 characters long.");
 
         if (doesCurrencySignHaveMistake(sign))
-            throw new InvalidException("Sign parameter must be less than 16 characters long.");
+            throw new InvalidException("Sign parameter must be no more than 16 characters long");
 
         Currency currency = Currency.builder()
                 .code(code.toUpperCase(Locale.ENGLISH))

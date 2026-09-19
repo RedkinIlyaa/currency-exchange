@@ -31,7 +31,7 @@ public class ExchangeRateDao {
             ORDER BY er.id
             """;
 
-    public static final String GET_EXCHANGE_RATE_BY_CURRENCY_CODE = """
+    private static final String GET_EXCHANGE_RATE_BY_CURRENCY_CODE = """
             SELECT er.id, base.id, base.code, base.full_name, base.sign, target.id, target.code, target.full_name, target.sign, er.rate
             FROM exchange_rates er
             INNER JOIN currencies base
@@ -102,7 +102,7 @@ public class ExchangeRateDao {
                   ON target.id = ir.target_currency_id
     """;
 
-    public static final String IF_EXCHANGE_RATE_EXIST_GET_EXCHANGE_RATE = """
+    private static final String IF_EXCHANGE_RATE_EXIST_GET_EXCHANGE_RATE = """
     SELECT base.id, base.code, base.full_name, base.sign, target.id, target.code, target.full_name, target.sign, er.rate
     FROM exchange_rates er
     INNER JOIN currencies base
