@@ -25,6 +25,7 @@ public class DataSourceManager {
         hikariConfig.setMaximumPoolSize(8);
         hikariConfig.setMinimumIdle(2);
         hikariConfig.setDriverClassName("org.postgresql.Driver");
+        hikariConfig.setConnectionTimeout(2000);
         hikariDataSource = new HikariDataSource(hikariConfig);
     }
 
