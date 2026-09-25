@@ -10,9 +10,9 @@ import java.util.regex.Pattern;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DecimalValidator {
 
-    private static final Pattern RATE_PATTERN = Pattern.compile("[0-9]{1,6}(?:\\.[0-9]{1,6})?");
+    private static final Pattern RATE_PATTERN = Pattern.compile("-?[0-9]{1,6}(?:\\.[0-9]{1,6})?");
 
-    private static final Pattern AMOUNT_PATTERN = Pattern.compile("[0-9]{1,18}(?:\\.[0-9]{1,6})?");
+    private static final Pattern AMOUNT_PATTERN = Pattern.compile("-?[0-9]{1,18}(?:\\.[0-9]{1,6})?");
 
     public static BigDecimal parseRate(String value) {
         return parsePositiveDecimal(
