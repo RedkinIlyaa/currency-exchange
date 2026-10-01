@@ -19,7 +19,7 @@ public class CurrencyDao {
 
     private static final CurrencyDao currencyDao = new CurrencyDao();
     private static final String UNIQUE_VIOLATION_SQL_STATE = "23505";
-    private static final String CODE_UNIQUE_CONSTRAINT =  "currencies_code_key";
+    private static final String CODE_UNIQUE_CONSTRAINT = "currencies_code_key";
     private static final String FULL_NAME_UNIQUE_CONSTRAINT = "currencies_full_name_key";
 
     private static final String GET_ALL_CURRENCIES = """
@@ -127,7 +127,7 @@ public class CurrencyDao {
                 throw new CurrencyAlreadyExistsException("Currency with code = " + currency.getCode() + " already exists", e);
             }
 
-            if (FULL_NAME_UNIQUE_CONSTRAINT.equals(constraint)){
+            if (FULL_NAME_UNIQUE_CONSTRAINT.equals(constraint)) {
                 throw new CurrencyAlreadyExistsException("Currency with name = " + currency.getFullName() + " already exists", e);
             }
 
