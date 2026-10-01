@@ -5,6 +5,7 @@ import lombok.*;
 @ToString
 @Getter
 @Builder
+@EqualsAndHashCode
 public class CurrencyDto {
     private Integer id;
     private String name;

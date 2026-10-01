@@ -5,41 +5,29 @@ import dto.CurrencyDto;
 import entity.Currency;
 import exception.invalid.InvalidCurrencyCodeException;
 import exception.invalid.InvalidException;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CurrencyService {
 
-    private static final CurrencyService currencyService = new CurrencyService();
-    private final CurrencyDao currencyDao = CurrencyDao.getInstance();
+    private static final CurrencyService currencyService = new CurrencyService(CurrencyDao.getInstance());
+    private final CurrencyDao currencyDao;
+
+    public CurrencyService(CurrencyDao currencyDao) {
+        this.currencyDao = currencyDao;
+    }
 
     public List<CurrencyDto> getAllCurrencies() {
-        return currencyDao.findAll().stream().map(
-                currency -> CurrencyDto.builder()
-                        .id(currency.getId())
-                        .name(currency.getFullName())
-                        .code(currency.getCode())
-                        .sign(currency.getSign())
-                        .build()
-        ).toList();
+        return currencyDao.findAll().stream().map(currency -> CurrencyDto.builder().id(currency.getId()).name(currency.getFullName()).code(currency.getCode()).sign(currency.getSign()).build()).toList();
     }
 
     public Optional<CurrencyDto> getCurrencyByCode(String code) {
         if (doesCurrencyCodeHaveMistake(code))
             throw new InvalidCurrencyCodeException("Code parameter must be exactly 3 char and contain only a-z or A-Z letters");
 
-        return currencyDao.findByCode(code.toUpperCase(Locale.ENGLISH))
-                .map(currency -> CurrencyDto.builder()
-                        .id(currency.getId())
-                        .name(currency.getFullName())
-                        .code(currency.getCode())
-                        .sign(currency.getSign())
-                        .build());
+        return currencyDao.findByCode(code.toUpperCase(Locale.ENGLISH)).map(currency -> CurrencyDto.builder().id(currency.getId()).name(currency.getFullName()).code(currency.getCode()).sign(currency.getSign()).build());
     }
 
     public CurrencyDto addNewCurrency(String name, String code, String sign) {
@@ -52,19 +40,10 @@ public class CurrencyService {
         if (doesCurrencySignHaveMistake(sign))
             throw new InvalidException("Sign parameter must be no more than 16 characters long");
 
-        Currency currency = Currency.builder()
-                .code(code.toUpperCase(Locale.ENGLISH))
-                .fullName(name)
-                .sign(sign)
-                .build();
+        Currency currency = Currency.builder().code(code.toUpperCase(Locale.ENGLISH)).fullName(name).sign(sign).build();
         Integer integer = currencyDao.save(currency);
 
-        return CurrencyDto.builder()
-                .id(integer)
-                .name(currency.getFullName())
-                .code(currency.getCode())
-                .sign(currency.getSign())
-                .build();
+        return CurrencyDto.builder().id(integer).name(currency.getFullName()).code(currency.getCode()).sign(currency.getSign()).build();
     }
 
     private boolean doesCurrencyCodeHaveMistake(String code) {
