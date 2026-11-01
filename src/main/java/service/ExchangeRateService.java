@@ -9,8 +9,6 @@ import entity.ExchangeRate;
 import exception.exist.ExchangeRateAlreadyExistsException;
 import exception.invalid.InvalidCurrencyCodeException;
 import exception.notfound.CurrencyNotFoundException;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import validator.DecimalValidator;
 
 import java.math.BigDecimal;
@@ -19,23 +17,24 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ExchangeRateService {
-    private static final ExchangeRateService EXCHANGE_RATE_SERVICE = new ExchangeRateService();
-    private final ExchangeRateDao exchangeRateDao = ExchangeRateDao.getInstance();
+    private static final ExchangeRateService EXCHANGE_RATE_SERVICE = new ExchangeRateService(ExchangeRateDao.getInstance(), CurrencyDao.getInstance());
+    private final ExchangeRateDao exchangeRateDao;
+    private final CurrencyDao currencyDao;
+
+    public ExchangeRateService(ExchangeRateDao exchangeRateDao, CurrencyDao currencyDao) {
+        this.exchangeRateDao = exchangeRateDao;
+        this.currencyDao = currencyDao;
+    }
 
     public List<ExchangeRateDto> getAllExchangeRates() {
-        return exchangeRateDao.getExchangeRatesList().stream()
-                .map(ExchangeRateService::createExchangeRateDTO)
-                .toList();
+        return exchangeRateDao.getExchangeRatesList().stream().map(ExchangeRateService::createExchangeRateDTO).toList();
     }
 
     public Optional<ExchangeRateDto> exchangeRateDtoByCurrenciesCodes(String firstCode, String secondCode) {
         Optional<ExchangeRate> exchangeRateByCurrencyCodes = exchangeRateDao.getExchangeRateByCurrencyCodes(firstCode.toUpperCase(Locale.ENGLISH), secondCode.toUpperCase(Locale.ENGLISH));
 
-        return exchangeRateByCurrencyCodes.map(
-                ExchangeRateService::createExchangeRateDTO
-        );
+        return exchangeRateByCurrencyCodes.map(ExchangeRateService::createExchangeRateDTO);
     }
 
     public Optional<ExchangeRateDto> addNewExchangeRate(String baseCurrencyCode, String targetCurrencyCode, String rate) {
@@ -54,9 +53,7 @@ public class ExchangeRateService {
             throw new ExchangeRateAlreadyExistsException("There is an exchange rate: " + targetCurrencyCode + " - " + baseCurrencyCode + ". You can't create reverse exchange rate");
 
         Optional<ExchangeRate> addedExchangeRate = exchangeRateDao.addExchangeRate(baseCurrencyCode, targetCurrencyCode, bigDecimalRate);
-        return addedExchangeRate.map(
-                ExchangeRateService::createExchangeRateDTO
-        );
+        return addedExchangeRate.map(ExchangeRateService::createExchangeRateDTO);
     }
 
     private boolean doesReverseRateExist(String baseCurrencyCode, String targetCurrencyCode) {
@@ -72,14 +69,10 @@ public class ExchangeRateService {
         BigDecimal bigDecimalRate = DecimalValidator.parseRate(rate);
 
         Optional<ExchangeRate> updatedExchangeRate = exchangeRateDao.updateExchangeRate(baseCurrencyCode, targetCurrencyCode, bigDecimalRate);
-        return updatedExchangeRate.map(
-                ExchangeRateService::createExchangeRateDTO
-        );
+        return updatedExchangeRate.map(ExchangeRateService::createExchangeRateDTO);
     }
 
     public ExchangeRateDto transferFromOneCurrencyToAnother(String baseCurrencyCode, String targetCurrencyCode, String stringAmount) {
-        CurrencyDao currencyDao = CurrencyDao.getInstance();
-
         if (doesCurrencyCodeHaveMistake(baseCurrencyCode)) {
             throw new InvalidCurrencyCodeException("Base currency code parameter must be exactly 3 char and contain only a-z or A-Z letters");
         }
@@ -142,24 +135,19 @@ public class ExchangeRateService {
                 secondExchangeRate.setRate(BigDecimal.ONE.divide(secondExchangeRate.getRate(), 20, RoundingMode.HALF_UP));
             }
 
-            return ExchangeRateDto
-                    .builder()
+            return ExchangeRateDto.builder()
                     .baseCurrency(
-                    CurrencyDto.builder()
+                            CurrencyDto.builder()
                             .id(firstExchangeRate.getBaseCurrency().getId())
-                            .code(firstExchangeRate.getBaseCurrency().getCode())
-                            .name(firstExchangeRate.getBaseCurrency().getFullName())
-                            .sign(firstExchangeRate.getBaseCurrency().getSign())
-                            .build()
-                    )
+                                    .code(firstExchangeRate.getBaseCurrency().getCode())
+                                    .name(firstExchangeRate.getBaseCurrency().getFullName())
+                                    .sign(firstExchangeRate.getBaseCurrency().getSign()).build())
                     .targetCurrency(
-                    CurrencyDto.builder()
-                            .id(secondExchangeRate.getTargetCurrency().getId())
-                        .code(secondExchangeRate.getTargetCurrency().getCode())
-                            .name(secondExchangeRate.getTargetCurrency().getFullName())
-                            .sign(secondExchangeRate.getTargetCurrency().getSign())
-                            .build()
-                    )
+                            CurrencyDto.builder()
+                                    .id(secondExchangeRate.getTargetCurrency().getId())
+                                    .code(secondExchangeRate.getTargetCurrency().getCode())
+                                    .name(secondExchangeRate.getTargetCurrency().getFullName())
+                                    .sign(secondExchangeRate.getTargetCurrency().getSign()).build())
                     .rate(firstExchangeRate.getRate().multiply(secondExchangeRate.getRate()))
                     .amount(amount)
                     .convertedAmount(firstExchangeRate.getRate().multiply(secondExchangeRate.getRate()).multiply(amount).setScale(2, RoundingMode.HALF_UP))
@@ -170,46 +158,23 @@ public class ExchangeRateService {
     }
 
     private static ExchangeRateDto createExchangeRateDTO(ExchangeRate exchangeRate) {
-        return ExchangeRateDto.builder()
-                .id(exchangeRate.getId())
-                .baseCurrency(
-                        CurrencyDto.builder()
-                                .id(exchangeRate.getBaseCurrency().getId())
-                                .code(exchangeRate.getBaseCurrency().getCode())
-                                .name(exchangeRate.getBaseCurrency().getFullName())
-                                .sign(exchangeRate.getBaseCurrency().getSign())
-                                .build()
-                )
-                .targetCurrency(
-                        CurrencyDto.builder()
-                                .id(exchangeRate.getTargetCurrency().getId())
-                                .code(exchangeRate.getTargetCurrency().getCode())
-                                .name(exchangeRate.getTargetCurrency().getFullName())
-                                .sign(exchangeRate.getTargetCurrency().getSign())
-                                .build()
-                )
-                .rate(exchangeRate.getRate())
-                .build();
+        return ExchangeRateDto.builder().id(exchangeRate.getId()).baseCurrency(CurrencyDto.builder().id(exchangeRate.getBaseCurrency().getId()).code(exchangeRate.getBaseCurrency().getCode()).name(exchangeRate.getBaseCurrency().getFullName()).sign(exchangeRate.getBaseCurrency().getSign()).build()).targetCurrency(CurrencyDto.builder().id(exchangeRate.getTargetCurrency().getId()).code(exchangeRate.getTargetCurrency().getCode()).name(exchangeRate.getTargetCurrency().getFullName()).sign(exchangeRate.getTargetCurrency().getSign()).build()).rate(exchangeRate.getRate()).build();
     }
 
     private static ExchangeRateDto createBigExchangeRateDTO(BigDecimal amount, ExchangeRate exchangeRate) {
         return ExchangeRateDto.builder()
                 .baseCurrency(
-                        CurrencyDto.builder()
-                                .id(exchangeRate.getBaseCurrency().getId())
-                                .code(exchangeRate.getBaseCurrency().getCode())
-                                .name(exchangeRate.getBaseCurrency().getFullName())
-                                .sign(exchangeRate.getBaseCurrency().getSign())
-                                .build()    
-                )
-                .targetCurrency(
-                        CurrencyDto.builder()
-                                .id(exchangeRate.getTargetCurrency().getId())
-                                .code(exchangeRate.getTargetCurrency().getCode())
-                                .name(exchangeRate.getTargetCurrency().getFullName())
-                                .sign(exchangeRate.getTargetCurrency().getSign())
-                                .build()
-                )
+                CurrencyDto.builder()
+                        .id(exchangeRate.getBaseCurrency().getId())
+                        .code(exchangeRate.getBaseCurrency().getCode())
+                        .name(exchangeRate.getBaseCurrency().getFullName())
+                        .sign(exchangeRate.getBaseCurrency().getSign()).build())
+                .targetCurrency(CurrencyDto.builder()
+                        .id(exchangeRate.getTargetCurrency().getId())
+                        .code(exchangeRate.getTargetCurrency().getCode())
+                        .name(exchangeRate.getTargetCurrency().getFullName())
+                        .sign(exchangeRate.getTargetCurrency().getSign())
+                        .build())
                 .rate(exchangeRate.getRate())
                 .amount(amount)
                 .convertedAmount(amount.multiply(exchangeRate.getRate()).setScale(2, RoundingMode.HALF_UP))

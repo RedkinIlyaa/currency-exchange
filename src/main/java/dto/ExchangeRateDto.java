@@ -2,6 +2,7 @@ package dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -10,6 +11,7 @@ import java.math.BigDecimal;
 @ToString
 @Getter
 @Builder
+@EqualsAndHashCode
 public class ExchangeRateDto {
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     private int id;
